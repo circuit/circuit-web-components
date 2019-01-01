@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Circuit Web Components</title>
+    <meta name="description" content="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Load the polyfill so that this works in browsers that don't yet have Custom Elements -->
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script type="module" src="../circuit-call-button.js" defer></script>
+    <script type="module" src="../circuit-call-stage.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
+
+    <style>
+      /* Global page styles which are inherited by element */
+      body {
+        font-family: sans-serif;
+        font-size: 12px;
+      }
+      /* Hide until defined to prevent flash rendering */
+      circuit-call-button:not(:defined) {
+        opacity: 0;
+      }
+      circuit-call-stage:not(:defined) {
+        opacity: 0;
+      }
+
+      #stage {
+        margin-top: 20px
+      }
+
+      /* Show call stage when stage is active (i.e. video is streaming) */
+      circuit-call-stage[streaming] {
+        width: 400px;
+        display: inline-block
+      }
+      circuit-call-stage {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>circuit-call-button + circuit-call-stage web components examples</h2>
+
+
+    <circuit-call-button video
+      domain="circuitsandbox.net"
+      clientId="f76ea1b2789946c9b88b008c682c132a"
+      poolUrl="https://guest-pool-tokens.appspot.com/token"
+      target="circuitsdk01@gmail.com"
+      callingText="Calling Helpdesk..."
+      hangupText="End call">Call Helpdesk</circuit-call-button>
+
+    <div id="stage">
+      <circuit-call-stage mode="overlay" overlay-position="top-right"></circuit-call-stage>
+    </div>
+
+    <p>Circuit is great!</p>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const el = document.querySelector('circuit-call-button');
+        const stageEl = document.querySelector('circuit-call-stage');
+        el.addEventListener('callChange', e => stageEl.call = e.detail);
+      });
+    </script>
+
+  </body>
+</html>

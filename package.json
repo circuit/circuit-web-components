@@ -1,0 +1,25 @@
+{
+  "name": "@unify/circuit-web-components",
+  "description": "Circuit web components",
+  "version": "0.0.1",
+  "author": "Unify Inc.",
+  "contributors": [
+    "Roger Urscheler <roger.urscheler@atos.net>"
+  ],
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/circuit/circuit-web-components",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/circuit/circuit-web-components"
+  },
+  "keywords": [
+    "web components",
+    "webrtc",
+    "circuit",
+    "collaboration",
+    "sdk"
+  ]
+}
