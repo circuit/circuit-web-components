@@ -75,7 +75,7 @@
     <div><code>hangupText</code>: <span>Optional text shown on button while call is in progress. Defaults to "Hangup"</span></div>
 
     <h4>Events:</h4>
-    <div><code>callChange</code>: <span>Raised on any call status change with parameter 'call'. 'call' is null when call ended.</span></div>
+    <div><code>callchange</code>: <span>Raised on any call status change with parameter 'call'. 'call' is null when call ended.</span></div>
 
     <h4>Styling:</h4>
     <p>Styling can be done as with any regular element. The attribute "in-progress" is added while the call is in progress, which is either in DELIVERED or ACTIVE state. To prevent flash rendering prior to the element being rendered completely, use the pseudo 'defined' attribute. E.g.</p>
@@ -122,7 +122,7 @@
         const el = document.querySelector('circuit-call-button');
         const callEl = document.getElementById('callstate');
         callEl.textContent = el.call ? el.call.state : 'Idle';
-        el.addEventListener('callChange', e =>
+        el.addEventListener('callchange', e =>
           callEl.textContent = e.detail ? e.detail.state : 'Idle'
         );
       });

@@ -1,6 +1,10 @@
 const template = document.createElement('template');
 template.innerHTML = `
 <style>
+* {
+  box-sizing: border-box
+}
+
 :host {
   display: inline-block;
   cursor: pointer;
@@ -38,7 +42,7 @@ button {
 export class CircuitCallButton extends HTMLElement {
   // Attributes we care about getting values from.
   static get observedAttributes() {
-    return ['video'];
+    return ['video', 'target'];
   }
 
   get connected() {
@@ -60,16 +64,6 @@ export class CircuitCallButton extends HTMLElement {
   constructor() {
     super();
     this._client = null;
-
-    // Non-watched attributes
-    this._clientId = this.getAttribute('clientId');
-    this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
-    this._poolUrl = this.getAttribute('poolUrl');
-    this._target = this.getAttribute('target');
-    this._sendVideo = this.getAttribute('video') !== null;
-    this._callingText = this.getAttribute('callingText') || 'Calling...';
-    this._hangupText = this.getAttribute('hangupText') || 'Hangup';
-    this._ringbackSound = this.getAttribute('ringbackSound') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
 
     this.root = this.attachShadow({ mode: 'open' });
     this.root.appendChild(template.content.cloneNode(true));
@@ -115,7 +109,7 @@ export class CircuitCallButton extends HTMLElement {
       // Set remote audio stream
       this.root.querySelector('#audio').srcObject = e.call.remoteAudioStream;
 
-      this.dispatchEvent(new CustomEvent('callChange', { detail: e.call }));
+      this.dispatchEvent(new CustomEvent('callchange', { detail: e.call }));
     });
 
     this._client.addEventListener('callEnded', e => {
@@ -129,7 +123,7 @@ export class CircuitCallButton extends HTMLElement {
       ringbackEl.load();
 
       // Raise without a call object as parameter
-      this.dispatchEvent(new CustomEvent('callChange'));
+      this.dispatchEvent(new CustomEvent('callchange'));
 
       // Wait a bit to ensure call is successfully terminated, then logout
       // Comment out for now due to a presence bug.
@@ -140,7 +134,7 @@ export class CircuitCallButton extends HTMLElement {
   async _getGuestToken() {
     let res = await fetch(`${this._poolUrl}?clientId=${this._clientId}&domain=${this._domain}`);
     res = await res.json();
-    return res.token;
+    return 'fde2f7ef6f3d4339861b2c29e899e38f';//res.token;
   }
 
   async _connect() {
@@ -187,6 +181,9 @@ export class CircuitCallButton extends HTMLElement {
   }
 
   async _click() {
+    if (this.getAttribute('disabled') !== null) {
+      return;
+    }
     if (!this.call) {
       this._makeCall();
     } else {
@@ -215,9 +212,15 @@ export class CircuitCallButton extends HTMLElement {
 
   // Lifecycle hooks
   connectedCallback() {
-  }
-
-  adoptedCallback() {
+    // Non-watched attributes
+    this._clientId = this.getAttribute('clientId');
+    this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
+    this._poolUrl = this.getAttribute('poolUrl');
+    this._target = this.getAttribute('target');
+    this._sendVideo = this.getAttribute('video') !== null;
+    this._callingText = this.getAttribute('callingText') || 'Calling...';
+    this._hangupText = this.getAttribute('hangupText') || 'Hangup';
+    this._ringbackSound = this.getAttribute('ringbackSound') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
   }
 
   disconnectedCallback() {
@@ -233,7 +236,11 @@ export class CircuitCallButton extends HTMLElement {
         this._client && this._client.toggleVideo(this.call.callId)
           .catch(console.error);
       }
+      break;
 
+      case 'target':
+      this._target = newValue;
+      break;
     }
   }
 }

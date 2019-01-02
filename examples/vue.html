@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Circuit Web Components</title>
+    <meta name="description" content="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Load the polyfill so that this works in browsers that don't yet have Custom Elements -->
+    <script src="//unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script type="module" src="../circuit-call-button.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
+
+    <script src="//unpkg.com/vue"></script>
+
+    <style>
+      /* Global page styles which are inherited by element */
+      body {
+        font-family: sans-serif;
+        font-size: 12px;
+      }
+      input {
+        height: 18px;
+        width: 200px;
+        padding-bottom: 2px
+      }
+      circuit-call-button {
+        padding: 4px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h2>Vue example</h2>
+    <div id="app">
+      <input v-model.trim="target" placeholder="Enter email">
+      <circuit-call-button
+        :disabled="!target"
+        @callchange="call = $event.detail"
+        :clientId="clientId"
+        poolUrl="https://guest-pool-tokens.appspot.com/token"
+        :target="target">Call Helpdesk</circuit-call-button>
+
+      <p>callstate: {{callstate}}</p>
+
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        new Vue({
+          el: '#app',
+          data: {
+            clientId: 'f76ea1b2789946c9b88b008c682c132a',
+            target: null,
+            call: null
+          },
+          computed: {
+            callstate: function () {
+              return this.call ? this.call.state : 'Idle';
+            }
+          }
+        })
+      });
+    </script>
+
+  </body>
+</html>

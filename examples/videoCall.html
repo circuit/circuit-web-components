@@ -63,7 +63,7 @@
       document.addEventListener('DOMContentLoaded', () => {
         const el = document.querySelector('circuit-call-button');
         const stageEl = document.querySelector('circuit-call-stage');
-        el.addEventListener('callChange', e => stageEl.call = e.detail);
+        el.addEventListener('callchange', e => stageEl.call = e.detail);
       });
     </script>
 
