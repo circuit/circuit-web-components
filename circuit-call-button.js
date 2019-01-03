@@ -77,7 +77,11 @@ export class CircuitCallButton extends HTMLElement {
   // Delay Circuit initialization to speed up page load. This way the SDK
   // can be loaded with 'async'
   async _init() {
-    this._client = Circuit.Client({domain: this._domain, client_id: this._clientId});
+    Circuit.logger.setLevel(1);
+    this._client = Circuit.Client({
+      domain: this._domain,
+      client_id: this._clientId
+    });
 
     this._client.addEventListener('connectionStateChanged', e => {
       console.log('connectionStateChanged event', e);
@@ -234,7 +238,10 @@ export class CircuitCallButton extends HTMLElement {
       if (this._sendVideo !== !!newValue) {
         this._sendVideo = !!newValue;
         this._client && this._client.toggleVideo(this.call.callId)
-          .catch(console.error);
+          .catch(err => {
+            console.log(err)
+          });
+
       }
       break;
 

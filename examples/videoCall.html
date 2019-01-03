@@ -1,40 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Circuit Web Components</title>
-    <meta name="description" content="">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Load the polyfill so that this works in browsers that don't yet have Custom Elements -->
-    <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
     <script type="module" src="../circuit-call-button.js" defer></script>
     <script type="module" src="../circuit-call-stage.js" defer></script>
-    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
 
     <style>
       /* Global page styles which are inherited by element */
       body {
         font-family: sans-serif;
-        font-size: 12px;
+        font-size: 13px;
       }
       /* Hide until defined to prevent flash rendering */
-      circuit-call-button:not(:defined) {
+      circuit-call-button:not(:defined), circuit-call-stage:not(:defined) {
         opacity: 0;
-      }
-      circuit-call-stage:not(:defined) {
-        opacity: 0;
-      }
-
-      #stage {
-        margin-top: 20px
       }
 
       /* Show call stage when stage is active (i.e. video is streaming) */
       circuit-call-stage[streaming] {
+        margin-top: 20px;
         width: 400px;
-        display: inline-block
+        height: 300px;
+        display: block;
       }
       circuit-call-stage {
         display: none;
@@ -42,28 +29,56 @@
     </style>
   </head>
   <body>
-    <h2>circuit-call-button + circuit-call-stage web components examples</h2>
-
-
-    <circuit-call-button video
+    <h2>Video call</h2>
+    <p>Uses web components <code>circuit-call-button</code> and <code>circuit-call-stage</code> to start a video call with a Circuit user specified by the <code>target</code> attribute. OAuth popup asking for Circuit authentication and permissions is shown for the first call.</p>
+    <circuit-call-button
+      video
       domain="circuitsandbox.net"
       clientId="f76ea1b2789946c9b88b008c682c132a"
-      poolUrl="https://guest-pool-tokens.appspot.com/token"
-      target="circuitsdk01@gmail.com"
-      callingText="Calling Helpdesk..."
-      hangupText="End call">Call Helpdesk</circuit-call-button>
+      target="circuitsdk01@gmail.com">Call HR</circuit-call-button>
+    <circuit-call-stage></circuit-call-stage>
 
-    <div id="stage">
-      <circuit-call-stage mode="overlay" overlay-position="top-right"></circuit-call-stage>
-    </div>
+    <p id="overlay">
+      <div>Set overlay attribute:</div>
+      <input type="radio" name="overlay" value="bottom-right" checked="checked"> bottom-right<br>
+      <input type="radio" name="overlay" value="top-right"> top-right<br>
+      <input type="radio" name="overlay" value="top-left"> top-left<br>
+      <input type="radio" name="overlay" value="bottom-left"> bottom-left<br>
+      <input type="radio" name="overlay" value="hide"> hide<br>
+    </p>
+    <p>
+      <a id="toggle" hidden href="">Toggle Sending Video</a>
+    </p>
 
-    <p>Circuit is great!</p>
+    <p>
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/blob/master/examples/videoCall.html">source</a> |
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
+      <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a>
+    </p>
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        const el = document.querySelector('circuit-call-button');
+        const btnEl = document.querySelector('circuit-call-button');
         const stageEl = document.querySelector('circuit-call-stage');
-        el.addEventListener('callchange', e => stageEl.call = e.detail);
+        const btnToggle = document.querySelector('#toggle');
+
+        btnEl.addEventListener('callchange', e => {
+          stageEl.call = e.detail;
+          e.detail && e.detail.isEstablished ? btnToggle.removeAttribute('hidden') : btnToggle.setAttribute('hidden', '');
+        });
+
+        for (let radio of document.querySelectorAll('input[name="overlay"]')) {
+          radio.addEventListener('change', e =>
+            stageEl.setAttribute('overlay', e.target.value)
+          );
+        }
+
+        document.querySelector('#toggle').addEventListener('click', e => {
+          e.preventDefault();
+          btnEl.call.localMediaType.video ? btnEl.removeAttribute('video') : btnEl.setAttribute('video', '')
+        });
+
       });
     </script>
 

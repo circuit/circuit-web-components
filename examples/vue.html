@@ -1,21 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Circuit Web Components</title>
-    <meta name="description" content="">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <!-- Load the polyfill so that this works in browsers that don't yet have Custom Elements -->
     <script src="//unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
     <script type="module" src="../circuit-call-button.js" defer></script>
-    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
-
-    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/vue" defer></script>
+    <script src="https://circuitdev.unify.com:8094/circuit.js" async></script>
 
     <style>
-      /* Global page styles which are inherited by element */
+      [v-cloak] {
+        display: none
+      }
       body {
         font-family: sans-serif;
         font-size: 12px;
@@ -28,22 +23,19 @@
       circuit-call-button {
         padding: 4px;
       }
-
     </style>
   </head>
   <body>
-    <h2>Vue example</h2>
-    <div id="app">
+    <h2>Vue.js app</h2>
+    <div id="app" v-cloak>
       <input v-model.trim="target" placeholder="Enter email">
       <circuit-call-button
         :disabled="!target"
-        @callchange="call = $event.detail"
         :clientId="clientId"
-        poolUrl="https://guest-pool-tokens.appspot.com/token"
-        :target="target">Call Helpdesk</circuit-call-button>
+        :target="target"
+        @callchange="call = $event.detail">Call Helpdesk</circuit-call-button>
 
       <p>callstate: {{callstate}}</p>
-
     </div>
 
     <script>
@@ -52,6 +44,7 @@
           el: '#app',
           data: {
             clientId: 'f76ea1b2789946c9b88b008c682c132a',
+            poolUrl: 'https://guest-pool-tokens.appspot.com/token',
             target: null,
             call: null
           },

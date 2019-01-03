@@ -1,22 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Circuit Web Components</title>
-    <meta name="description" content="">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <!-- Load the polyfill so that this works in browsers that don't yet have Custom Elements -->
-    <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script src="//unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk" async></script>
     <script type="module" src="../circuit-call-button.js" defer></script>
-    <script src="//unpkg.com/circuit-sdk/circuit.js" async></script>
 
     <style>
       /* Global page styles which are inherited by element */
       body {
         font-family: sans-serif;
-        font-size: 12px;
+        font-size: 13px;
       }
       /* Hide button until defined to prevent flash rendering */
       circuit-call-button:not(:defined) {
@@ -37,85 +31,24 @@
     </style>
   </head>
   <body>
-    <h2>circuit-call-button web component</h2>
-    <p>Web component to initiate a direct call either as authenticated Circuit user, or as non-authenticated guest user. Only audio supported at this time. For guest calls, a pool app is required to hand out tokens.</p>
-    <h4>examples:</h4>
+    <h2>Audio call</h2>
+    <p>Uses web component <code>circuit-call-button</code> to start an audio call with a Circuit user specified by the <code>target</code> attribute. OAuth popup asking for Circuit authentication and permissions is shown for the first call.</p>
 
     <circuit-call-button
       domain="circuitsandbox.net"
       clientId="f76ea1b2789946c9b88b008c682c132a"
-      poolUrl="https://guest-pool-tokens.appspot.com/token"
       target="circuitsdk01@gmail.com"
       callingText="Calling Helpdesk..."
       hangupText="End call">Call Helpdesk</circuit-call-button>
 
-    <p>callstate: <span id="callstate"></span></p>
+    <p>callstate: <b><span id="callstate"></span></b></p>
 
-    <h4>Usage:</h4>
-    <xmp>
-  <body>
-    <circuit-call-button
-      domain="circuitsandbox.net"
-      clientId="f76ea1b2789946c9b88b008c682c132a"
-      poolUrl="https://guest-pool-tokens.appspot.com/token"
-      target="circuitsdk01@gmail.com"
-      callingText="Calling Helpdesk..."
-      hangupText="End call">Call Helpdesk</circuit-call-button>
-    <script type="module" src="./circuit-call-button.js"></script>
-    <script src="//unpkg.com/circuit-sdk" async></script>
-  </body>
-    </xmp>
-
-    <h4>Attributes:</h4>
-    <div><code>domain</code>: <span>Url of Circuit system. Default is circuitsandbox.net</span></div>
-    <div><code>clientId</code>: <span>client ID of your app. Required. Get one at https://circuit.github.io</span></div>
-    <div><code>poolUrl</code>: <span>Url of app handing out access tokens of a pool of users. Optional. If not defined user will be asked to login via OAuth. If defined, the app must return a json object with a token attribute.</span></div>
-    <div><code>target</code>: <span>Email of Circuit user to call. Required.</span></div>
-    <div><code>callingText</code>: <span>Optional text shown on button during the alerting phase. Defaults to "Calling..."</span></div>
-    <div><code>hangupText</code>: <span>Optional text shown on button while call is in progress. Defaults to "Hangup"</span></div>
-
-    <h4>Events:</h4>
-    <div><code>callchange</code>: <span>Raised on any call status change with parameter 'call'. 'call' is null when call ended.</span></div>
-
-    <h4>Styling:</h4>
-    <p>Styling can be done as with any regular element. The attribute "in-progress" is added while the call is in progress, which is either in DELIVERED or ACTIVE state. To prevent flash rendering prior to the element being rendered completely, use the pseudo 'defined' attribute. E.g.</p>
-    <xmp>
-  /* Hide button until defined to prevent flash rendering */
-  circuit-call-button:not(:defined) {
-    opacity: 0;
-  }
-  /* Style button. Defaults to circuit colors. */
-  circuit-call-button {
-    color: snow;
-    background: steelblue;
-    font-size: 14px;
-  }
-  /* Use 'in-progress' attribute to style button when call can be cancelled. This is in delieverd and active states */
-  circuit-call-button[in-progress] {
-    color: snow;
-    background: firebrick;
-  }
-    </xmp>
-
-    <h4>Other examples:</h4>
-    <xmp>
-  <circuit-call-button
-    clientId="f76ea1b2789946c9b88b008c682c132a"
-    target="support@mycompany.com">Call Support</circuit-call-button>
-    </xmp>
-
-    <xmp>
-  <circuit-call-button
-    domain="eu.yourcircuit.com"
-    clientId="f76ea1b2789946c9b88b008c682c132a"
-    poolUrl="https://circuit-pool.company.com"
-    target="hr@company.com">Call HR</circuit-call-button>
-    </xmp>
-
-    <h4>Source code:</h4>
-    <div>circuit-call-button: <a href="https://github.com/circuit/circuit-call-button">github</a> | <a href="https://www.npmjs.com/package/circuit-call-button">npm</a></div>
-    <div>pool app: <a href="https://github.com/circuit/guest-pool">guest-pool</a></div>
-
+    <p>
+        <a target="_blank" href="https://github.com/circuit/circuit-web-components/blob/master/examples/audioCall.html">source</a> |
+        <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
+        <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
+        <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a>
+      </p>
 
     <script>
       document.addEventListener('DOMContentLoaded', () => {

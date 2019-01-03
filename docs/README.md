@@ -1,20 +1,16 @@
 # Circuit Web Components Documentation
 
+Circuit Web Components allow for
 Circuit Web Components have no dependency on any JavaScript framework, they are pure JavaScript [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) according to the latest standard.
 
 The components use the [Circuit JS SDK](https://github.com/circuit/circuit-sdk). To get your own Circuit sandbox and register an application, see step 1 at https://circuit.github.io/
 
 
-## Components
+## API Documentation
 
-### [circuit-call-button](circuit-call-button.md)
+* [circuit-call-button](circuit-call-button.md)
+* [circuit-call-stage](circuit-call-stage.md)
 
-Component showing a button to start a Circuit call, either as guest (via pool of authenticated users), or a regular user via OAuth authentication. For video calls the [circuit-call-stage](circuit-call-stage.md) component can be used to display the local and remote video streams.
-
-
-### [circuit-call-stage](circuit-call-stage.md)
-
-Component redering the local and remote video streams of a call. `mode` attribute can be used to define layout. Default mode is `overlay` to show the local stream at the bottom right as overlay.
 
 ## Usage
 

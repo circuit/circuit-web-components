@@ -6,6 +6,7 @@ template.innerHTML = `
 }
 
 #container {
+  display: inline-flex;
   height: inherit;
   width: inherit;
   position: relative;
@@ -19,8 +20,6 @@ template.innerHTML = `
 
 #localVideo {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
 }
 
 </style>
@@ -34,7 +33,7 @@ template.innerHTML = `
 export class CircuitCallStage extends HTMLElement {
   // Attributes we care about getting values from.
   static get observedAttributes() {
-    return ['mode', 'overlay'];
+    return ['overlay'];
   }
 
   get call() {
@@ -57,6 +56,7 @@ export class CircuitCallStage extends HTMLElement {
   constructor() {
     super();
     this._call = null;
+    this._overlay = 'bottom-right';
 
     this.root = this.attachShadow({ mode: 'open' });
     this.root.appendChild(template.content.cloneNode(true));
@@ -83,8 +83,17 @@ export class CircuitCallStage extends HTMLElement {
       // Reflect 'streaming' attribute
       this._streaming = !!this._remoteVideoEl.srcObject || !!this._localVideoEl.srcObject;
 
+      // Position and size local video
       this._localVideoEl.style.width = Math.floor(this._containerEl.offsetWidth / 4) + 'px';
-      this._localVideoEl.style.height = Math.floor(this._containerEl.offsetHeight / 4) + 'px';
+      if (this._overlay === 'hide') {
+        this._localVideoEl.srcObject = null;
+      } else {
+        this._localVideoEl.style.top = this._overlay.startsWith('top-') ? '5px' : 'unset';
+        this._localVideoEl.style.bottom = this._overlay.startsWith('bottom-') ? '5px' : 'unset';
+        this._localVideoEl.style.left = this._overlay.endsWith('-left') ? '5px' : 'unset';
+        this._localVideoEl.style.right = this._overlay.endsWith('-right') ? '5px' : 'unset';
+      }
+
     } catch (err) {
       console.error('Error rendering video streams', err);
       throw new Error('Error rendering video streams');
@@ -94,11 +103,10 @@ export class CircuitCallStage extends HTMLElement {
     // Lifecycle hooks
     attributeChangedCallback(attrName, oldValue, newValue) {
       switch (attrName) {
-        case 'mode':
-        this._mode = newValue;
+        case 'overlay':
+        /* Values: bottom-right (default), top-right, bottom-left, top-left, hide */
+        this._overlay = newValue || 'bottom-right';
         this._render();
-        break;
-        case 'overlay-position':
         break;
       }
     }
