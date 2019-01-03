@@ -131,10 +131,18 @@ export class CircuitCallButton extends HTMLElement {
     });
   }
 
-  async _getGuestToken() {
+  async _getCredentials() {
     let res = await fetch(`${this._poolUrl}?clientId=${this._clientId}&domain=${this._domain}`);
     res = await res.json();
-    return res.token;
+    if (!res || !res.token) {
+      throw Error('No pool users found');
+    }
+    const cred = atob(res.token).split(':');
+    this._client.setOauthConfig({client_id: cred[2]});
+    return {
+      username: cred[0],
+      password: cred[1]
+    };
   }
 
   async _connect() {
@@ -148,11 +156,8 @@ export class CircuitCallButton extends HTMLElement {
         return;
       } else if (this._client.connectionState === 'Disconnected') {
         if (this._poolUrl) {
-          const token = await this._getGuestToken();
-          if (!token) {
-            throw Error('All lines are busy');
-          }
-          await this._client.logon({accessToken: token});
+          const cred = await this._getCredentials();
+          await this._client.logon(cred);
         } else {
           await this._client.logon();
         }
@@ -221,9 +226,6 @@ export class CircuitCallButton extends HTMLElement {
     this._callingText = this.getAttribute('callingText') || 'Calling...';
     this._hangupText = this.getAttribute('hangupText') || 'Hangup';
     this._ringbackTone = this.getAttribute('ringbackTone') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
-  }
-
-  disconnectedCallback() {
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {

@@ -7,7 +7,7 @@
 <circuit-call-button
   video
   domain="circuitsandbox.net"
-  clientId="f76ea1b2789946c9b88b008c682c132a"
+  clientId="f06c51a30f0d4eb6acc05829c3e86266"
   target="circuitsdk01@gmail.com"
   callingText="Calling Helpdesk..."
   ringbackTone="https://upload.wikimedia.org/wikipedia/commons/e/ea/UK_ringback_tone.ogg"
@@ -17,7 +17,7 @@
 ```html
 // Audio call. Specifies only required attribute. Defaults to circuitsandbox.net system.
 <circuit-call-button
-  clientId="f76ea1b2789946c9b88b008c682c132a"
+  clientId="f06c51a30f0d4eb6acc05829c3e86266"
   target="support@mycompany.com">Call Support</circuit-call-button>
 ```
 

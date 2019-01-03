@@ -40,7 +40,7 @@ Example:
   </head>
   <body>
     <circuit-call-button
-      clientId="f76ea1b2789946c9b88b008c682c132a"
+      clientId="f06c51a30f0d4eb6acc05829c3e86266"
       target="helpdesk@company.com">Call Helpdesk</circuit-call-button>
   </body>
 </html>
