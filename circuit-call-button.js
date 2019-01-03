@@ -57,6 +57,16 @@ export class CircuitCallButton extends HTMLElement {
     }
   }
 
+  set target(value) {
+    this._target = value;
+    // Reflect to attribute
+    this.setAttribute('target', value);
+  }
+
+  get target() {
+    return this._target;
+  }
+
   constructor() {
     super();
     this._client = null;
