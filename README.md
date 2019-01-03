@@ -37,10 +37,10 @@ Renders local and remote video streams of a call. `call` is passed as property t
 See [docs/README.md](docs/README.md)
 
 ## Live examples
-* [Audio call](https://cdn.staticaly.com/gh/circuit/circuit-web-components/master/examples/audioCall.html) (circuit-call-button)
-* [Video call](https://cdn.staticaly.com/gh/circuit/circuit-web-components/master/examples/videoCall.html) (circuit-call-button and circuit-call-stage)
-* [Guest video call](https://cdn.staticaly.com/gh/circuit/circuit-web-components/master/examples/guestCall.html) (circuit-call-button and circuit-call-stage)
-* [Vue.js app](https://cdn.staticaly.com/gh/circuit/circuit-web-components/master/examples/vue.html) (circuit-call-button)
+* [Audio call](https://raw.githack.com/circuit/circuit-web-components/master/examples/audioCall.html) (circuit-call-button)
+* [Video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/videoCall.html) (circuit-call-button and circuit-call-stage)
+* [Guest video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/guestCall.html) (circuit-call-button and circuit-call-stage)
+* [Vue.js app](https://raw.githack.com/circuit/circuit-web-components/master/examples/vue.html) (circuit-call-button)
 
 
 
