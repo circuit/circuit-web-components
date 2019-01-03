@@ -33,7 +33,7 @@ Example:
       circuit-call-button:not(:defined) {
         opacity: 0;
       }
-      circuit-call-button[in-progress] {
+      circuit-call-button[inprogress] {
         background: firebrick;
       }
     </style>

@@ -3,13 +3,14 @@
 ## Usage
 
 ```html
-// Video call. Shows OAuth popup if not authenticated. Defines custom calling and hangup texts.
+// Video call. Shows OAuth popup if not authenticated. Defines custom calling & hangup texts, and ringback sound.
 <circuit-call-button
   video
   domain="circuitsandbox.net"
   clientId="f76ea1b2789946c9b88b008c682c132a"
   target="circuitsdk01@gmail.com"
   callingText="Calling Helpdesk..."
+  ringbackTone="https://upload.wikimedia.org/wikipedia/commons/e/ea/UK_ringback_tone.ogg"
   hangupText="End call">Call Helpdesk</circuit-call-button>
 ```
 
@@ -43,7 +44,9 @@
 | video       | no       | omitted (false)    | Boolean attribute. If present, local video is streamed.
 | callingText | no       | "Calling..."       | Text shown on button during the alerting phase
 | hangupText  | no       | "Hangup"           | Text shown on button while in "Delievered" state or established call
-| in-progress | no       | omitted (false)    | Attribute set by the web component to allow easy CSS attribute styling
+| ringbackTone| no       | US ringback tone   | Ringback tone played to user when call is delivered, prior to called party answering
+| inprogress  | no       | omitted (false)    | Attribute set by the web component to allow easy CSS attribute styling
+| connected   | no       | omitted (false)    | Attribute set by the web component to indicate if component if connected to the Circuit servers. Can be used to change the button style via CSS if connection is lost.
 
 
 <a name="myfootnote1">1</a>: See [dev portal](https://circuit.github.io) for instructions on how to get your own sandbox tenant and how to register an app to get the credentials (client_id).
@@ -53,20 +56,20 @@
 
 ### Properties
 
-| Name        |  Type            | Description
-| ---         |  ---                | ---
-| call        |  [Call](https://circuitsandbox.net/sdk/classes/Call.html)                   | Call object as defined in the Circuit JS SDK
+| Name        |  Type            |  Read/Write      | Description
+| ---         |  ---             |  ---             | ---
+| call        | [Call](https://circuitsandbox.net/sdk/classes/Call.html) | read | Call object as defined in the Circuit JS SDK.
 
 
 ### Events
 
 | Name        |  Arguments          | Description
 | ---         |  ---                | ---
-| callchange  |  [Call](https://circuitsandbox.net/sdk/classes/Call.html)                   | Raised on any call related change such as a call state change, remote steam added/removed. `call` argument is null when call ended.
+| callchange  |  [Call](https://circuitsandbox.net/sdk/classes/Call.html)                   | Raised on any call related change such as a call state change, remote steam added/removed. `call` argument is `null` when call ended.
 
 ### Styling (CSS)
 
-Styling can be done as with any regular element. The attribute `in-progress` is added while the call is in progress (i.e. in DELIVERED or ACTIVE state). To prevent flash rendering prior to the element being rendered completely, use the pseudo attribute `defined`.
+Styling can be done as with any regular element. The attribute `inprogress` is added while the call is in progress (i.e. in DELIVERED or ACTIVE state). To prevent flash rendering prior to the element being rendered completely, use the pseudo attribute `defined`.
 
 Here are some example CSS rules:
 ```css
@@ -82,8 +85,8 @@ circuit-call-button {
   font-size: 14px;
 }
 
-/* Use 'in-progress' attribute to style button when call can be cancelled. This is in delieverd and active states */
-circuit-call-button[in-progress] {
+/* Use 'inprogress' attribute to style button when call can be cancelled. This is in delieverd and active states */
+circuit-call-button[inprogress] {
   color: snow;
   background: firebrick;
 }

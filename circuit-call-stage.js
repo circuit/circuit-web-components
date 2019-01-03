@@ -110,10 +110,6 @@ export class CircuitCallStage extends HTMLElement {
         break;
       }
     }
-
-    connectedCallback() {
-
-    }
 }
 
 customElements.define('circuit-call-stage', CircuitCallStage);

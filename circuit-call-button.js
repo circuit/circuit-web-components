@@ -13,7 +13,7 @@ template.innerHTML = `
   color: white;
   padding: 5px 10px;
 }
-:host([in-progress]) {
+:host([inprogress]) {
   background:#c22026;
 }
 
@@ -57,10 +57,6 @@ export class CircuitCallButton extends HTMLElement {
     }
   }
 
-  get state() {
-    return this.getAttribute('state');
-  }
-
   constructor() {
     super();
     this._client = null;
@@ -91,12 +87,12 @@ export class CircuitCallButton extends HTMLElement {
     this._client.addEventListener('callStatus', e => {
       this.call = e.call;
 
-      // Update 'in-progress' attribute and button text
+      // Update 'inprogress' attribute and button text
       if (e.call.state === 'Initiated') {
-        this.removeAttribute('in-progress');
+        this.removeAttribute('inprogress');
         this._btn.textContent = this._callingText;
       } else {
-        this.setAttribute('in-progress', '');
+        this.setAttribute('inprogress', '');
         this._btn.textContent = this._hangupText;
         this.removeAttribute('disabled', '');
       }
@@ -104,7 +100,7 @@ export class CircuitCallButton extends HTMLElement {
       // Set/clear ringback tone
       const ringbackEl = this.root.querySelector('#ringback');
       if (e.call.state === 'Delivered') {
-        ringbackEl.src = this._ringbackSound;
+        ringbackEl.src = this._ringbackTone;
       } else {
         ringbackEl.removeAttribute('src');
         ringbackEl.load();
@@ -119,7 +115,7 @@ export class CircuitCallButton extends HTMLElement {
     this._client.addEventListener('callEnded', e => {
       console.log('callEnded event', e);
       this.call = null;
-      this.removeAttribute('in-progress');
+      this.removeAttribute('inprogress');
       this._btn.textContent = this._defaultText;
 
       const ringbackEl = this.root.querySelector('#ringback');
@@ -196,7 +192,7 @@ export class CircuitCallButton extends HTMLElement {
   }
 
   async _makeCall() {
-    // For better user feedback change call to in-progress before call
+    // For better user feedback change call to inprogress before call
     // state is 'Initiated'
     const origText = this._btn.textContent;
     this._btn.textContent = this._callingText;
@@ -224,7 +220,7 @@ export class CircuitCallButton extends HTMLElement {
     this._sendVideo = this.getAttribute('video') !== null;
     this._callingText = this.getAttribute('callingText') || 'Calling...';
     this._hangupText = this.getAttribute('hangupText') || 'Hangup';
-    this._ringbackSound = this.getAttribute('ringbackSound') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
+    this._ringbackTone = this.getAttribute('ringbackTone') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
   }
 
   disconnectedCallback() {

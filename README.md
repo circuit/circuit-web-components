@@ -1,5 +1,29 @@
 # Circuit Web Components
 
+[![NPM Version](https://img.shields.io/npm/v/@unify/circuit-web-components.svg?style=flat)](https://www.npmjs.com/package/@unify/circuit-web-components)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Enhance your website with Circuit features such as making video calls without any code. Just include the desired web component module and the Circuit JS SDK and use the element.
+
+Based on the latest Web Components standard. No dependency on any Web Components framework.
+
+```html
+<html>
+  <head>
+    <script type="module" src="//unpkg.com/@unify/circuit-web-components/circuit-call-button.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk" async></script>
+    <style>
+      circuit-call-button[inprogress] { background: firebrick; }
+    </style>
+  </head>
+  <body>
+    <circuit-call-button
+      clientId="f76ea1b2789946c9b88b008c682c132a"
+      target="helpdesk@company.com">Call Helpdesk</circuit-call-button>
+  </body>
+</html>
+```
+
 ## Components
 
 ### [circuit-call-button](docs/circuit-call-button.md)
@@ -7,7 +31,7 @@ Renders a button to start a Circuit call, either as guest (via pool of authentic
 
 
 ### [circuit-call-stage](docs/circuit-call-stage.md)
-Renders local and remote video streams of a call. `overlay` attribute can be used to define the position on the local video, or to hide it.
+Renders local and remote video streams of a call. `call` is passed as property to the web component. `overlay` attribute can be used to define the position on the local video, or to hide it.
 
 ## Usage and Documentation
 See [docs/README.md](docs/README.md)

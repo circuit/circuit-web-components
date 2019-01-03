@@ -17,13 +17,13 @@
       }
 
       /* Show call stage when stage is active (i.e. video is streaming) */
-      circuit-call-stage[streaming] {
+      circuit-call-stage {
         margin-top: 20px;
         width: 400px;
         height: 300px;
         display: block;
       }
-      circuit-call-stage {
+      circuit-call-stage:not([streaming]) {
         display: none;
       }
     </style>
@@ -78,7 +78,6 @@
           e.preventDefault();
           btnEl.call.localMediaType.video ? btnEl.removeAttribute('video') : btnEl.setAttribute('video', '')
         });
-
       });
     </script>
 
