@@ -134,7 +134,7 @@ export class CircuitCallButton extends HTMLElement {
   async _getGuestToken() {
     let res = await fetch(`${this._poolUrl}?clientId=${this._clientId}&domain=${this._domain}`);
     res = await res.json();
-    return 'fde2f7ef6f3d4339861b2c29e899e38f';//res.token;
+    return res.token;
   }
 
   async _connect() {
