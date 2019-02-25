@@ -83,17 +83,28 @@ export class CircuitCallStage extends HTMLElement {
       // Reflect 'streaming' attribute
       this._streaming = !!this._remoteVideoEl.srcObject || !!this._localVideoEl.srcObject;
 
-      // Position and size local video
-      this._localVideoEl.style.width = Math.floor(this._containerEl.offsetWidth / 4) + 'px';
+      // Hide local video
       if (this._overlay === 'hide') {
         this._localVideoEl.srcObject = null;
-      } else {
-        this._localVideoEl.style.top = this._overlay.startsWith('top-') ? '5px' : 'unset';
-        this._localVideoEl.style.bottom = this._overlay.startsWith('bottom-') ? '5px' : 'unset';
-        this._localVideoEl.style.left = this._overlay.endsWith('-left') ? '5px' : 'unset';
-        this._localVideoEl.style.right = this._overlay.endsWith('-right') ? '5px' : 'unset';
+        return;
       }
 
+      // Show local video in full
+      if (this._overlay === 'full') {
+        this._localVideoEl.style.top = 'unset';
+        this._localVideoEl.style.bottom = 'unset';
+        this._localVideoEl.style.left = 'unset';
+        this._localVideoEl.style.right = 'unset';
+        this._localVideoEl.style.width = 'inherit';
+        return;
+      }
+
+      // Show local video as positioned overlay
+      this._localVideoEl.style.width = Math.floor(this._containerEl.offsetWidth / 4) + 'px';
+      this._localVideoEl.style.top = this._overlay.startsWith('top-') ? '5px' : 'unset';
+      this._localVideoEl.style.bottom = this._overlay.startsWith('bottom-') ? '5px' : 'unset';
+      this._localVideoEl.style.left = this._overlay.endsWith('-left') ? '5px' : 'unset';
+      this._localVideoEl.style.right = this._overlay.endsWith('-right') ? '5px' : 'unset';
     } catch (err) {
       console.error('Error rendering video streams', err);
       throw new Error('Error rendering video streams');
@@ -104,7 +115,7 @@ export class CircuitCallStage extends HTMLElement {
     attributeChangedCallback(attrName, oldValue, newValue) {
       switch (attrName) {
         case 'overlay':
-        /* Values: bottom-right (default), top-right, bottom-left, top-left, hide */
+        /* Values: bottom-right (default), top-right, bottom-left, top-left, hide, full */
         this._overlay = newValue || 'bottom-right';
         this._render();
         break;
