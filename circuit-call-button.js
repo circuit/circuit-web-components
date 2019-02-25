@@ -78,6 +78,8 @@ export class CircuitCallButton extends HTMLElement {
     this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
     this._btn.textContent = this._defaultText;
     this._btn.addEventListener('click', this._click.bind(this));
+
+    this.addEventListener('click', this._click);
   }
 
   // Delay Circuit initialization to speed up page load. This way the SDK
