@@ -67,6 +67,10 @@ export class CircuitCallButton extends HTMLElement {
     return this._target;
   }
 
+  get client() {
+    return this._client;
+  }
+
   constructor() {
     super();
     this._client = null;
@@ -78,6 +82,8 @@ export class CircuitCallButton extends HTMLElement {
     this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
     this._btn.textContent = this._defaultText;
     this._btn.addEventListener('click', this._click.bind(this));
+
+    this.addEventListener('click', this._click);
   }
 
   // Delay Circuit initialization to speed up page load. This way the SDK
@@ -139,6 +145,8 @@ export class CircuitCallButton extends HTMLElement {
       // Comment out for now due to a presence bug.
       //setTimeout(this._client.logout, 200);
     });
+
+    this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
   }
 
   async _getCredentials() {
@@ -245,11 +253,8 @@ export class CircuitCallButton extends HTMLElement {
       newValue = newValue !== null;
       if (this._sendVideo !== !!newValue) {
         this._sendVideo = !!newValue;
-        this._client && this._client.toggleVideo(this.call.callId)
-          .catch(err => {
-            console.log(err)
-          });
-
+        this._client && this.call && this._client.toggleVideo(this.call.callId)
+          .catch(console.error);
       }
       break;
 

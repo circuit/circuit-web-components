@@ -31,7 +31,7 @@ Defines the location in the HTML where the call stage (i.e. local and remove vid
 
 | Name        | Required | Default            | Description
 | ---         | ---      | ---                | ---
-| overlay     | no       | bottom-right       | Position of local video overlay. Values are: `bottom-right`, `top-right`, `top-left`, `bottom-left`, `hide`
+| overlay     | no       | bottom-right       | Position of local video overlay. Values are: `bottom-right`, `top-right`, `top-left`, `bottom-left`, `hide`, `full`
 | streaming   | no       | omitted (false)    | Attribute set by the web component to indicate if video is being streamed by the local user or the remove user. Can be used to hide the call stage via CSS when no video is being streamed.
 
 
@@ -40,6 +40,8 @@ Defines the location in the HTML where the call stage (i.e. local and remove vid
 | Name        |  Type            |  Read/Write      | Description
 | ---         |  ---             |  ---             | ---
 | call        | [Call](https://circuitsandbox.net/sdk/classes/Call.html) | write | Call object as defined in the Circuit JS SDK and raise in `callchange` by `circuit-call-button`.
+| localVideo        | video DOM element | read | DOM video element used in call state for local video
+| remoteVideo        | video DOM element | read | DOM video element used in call state for remote video
 
 
 ### Events

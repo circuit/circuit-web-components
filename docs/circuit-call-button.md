@@ -59,6 +59,7 @@
 | Name        |  Type            |  Read/Write      | Description
 | ---         |  ---             |  ---             | ---
 | call        | [Call](https://circuitsandbox.net/sdk/classes/Call.html) | read | Call object as defined in the Circuit JS SDK.
+| client        | [Client](https://circuitsandbox.net/sdk/classes/Client.html) | read | Circuit Client object as defined in the Circuit JS SDK.
 
 
 ### Events
@@ -66,6 +67,7 @@
 | Name        |  Arguments          | Description
 | ---         |  ---                | ---
 | callchange  |  [Call](https://circuitsandbox.net/sdk/classes/Call.html)                   | Raised on any call related change such as a call state change, remote steam added/removed. `call` argument is `null` when call ended.
+| initialized  |  [Client](https://circuitsandbox.net/sdk/classes/Client.html)                   | Raised when Circuit.Client is initialized.
 
 ### Styling (CSS)
 
