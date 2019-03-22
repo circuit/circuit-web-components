@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="//unpkg.com/circuit-sdk@latest/circuit.min.js" async></script>
+    <script type="module" src="../circuit-chat.js" defer></script>
+
+    <style>
+      /* Global page styles which are inherited by element */
+      body {
+        font-family: sans-serif;
+        font-size: 13px;
+      }
+
+      input {
+        width: 150px;
+        margin: 5px 0px 10px 0px;
+      }
+
+      .conversation-button-container { 
+        padding-bottom: 20px;
+        display: flex;
+        align-content: center;
+      }
+
+      .conv-btn {
+        margin-left: 20px;
+      }
+
+      circuit-chat {
+        width: 700px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Circuit Conversation</h2>
+    <p>Uses web components <code>circuit-conversation</code> to retrieve the conversation feed of the <code>target</code> attribute.</p>
+    <div>
+      Enter a Conversation Id to display the feed.<br>
+      <input placeholder="conversation id">
+    </div>
+    <div class="conversation-button-container">
+        <div>Get Conversation Feed</div>
+        <button class="conv-btn" id="get-conv">Click</button>
+    </div>
+    <circuit-chat
+      domain="circuitsandbox.net"
+      clientId="f06c51a30f0d4eb6acc05829c3e86266"
+      poolUrl="https://guest-pool-tokens.circuit-apps.com/token"></circuit-chat>
+    <p>
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/blob/master/examples/guestCall.html">source</a> |
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
+      <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a> |
+      <a href="https://github.com/circuit/guest-pool">guest pool app</a>
+    </p>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const inputEl = document.querySelector('input');
+        const convBtn = document.querySelector('#get-conv');
+        const convEl = document.querySelector('circuit-chat');
+        convEl.size = 15;  // Size of component
+        convEl.maxItems = 20; // Maximum number of past items to save in memory defaults to 100
+        convEl.initNumOfItems = 100; // Inital number of items to retreive, must be lower than maxItems ( defaults to maxItems or 20)
+        convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
+      });
+    </script>
+
+  </body>
+</html>
