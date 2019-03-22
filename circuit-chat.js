@@ -53,6 +53,7 @@ export class CircuitConversation extends HTMLElement {
     this._convId = value;
     // Reflect to attribute
     this._conversationFeed.display = 'none';
+    this._input.display = 'none';
     this.setAttribute('convId', value);
     this._getConversation();
   }
@@ -237,6 +238,7 @@ export class CircuitConversation extends HTMLElement {
       }
       this._feed.forEach(item => this._conversationFeed.appendChild(this._createItemHtml(item)));
       this._conversationFeed.display = 'block';
+      this._input.display = 'block';
       this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
   }
 
