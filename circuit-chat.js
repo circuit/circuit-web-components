@@ -56,15 +56,6 @@ export class CircuitConversation extends HTMLElement {
     this._getItems();
   }
 
-  set sendOnEnter(value) {
-    this._sendOnEnter = !!value;
-  }
-
-  set initNumOfItems(value) {
-    // Initial number of items to retrieve, defaults to 20
-    this._initNumOfItems = value ? value : 20;
-  }
-
   get sendOnEnter() {
     return this._sendOnEnter;
   }
@@ -254,8 +245,8 @@ export class CircuitConversation extends HTMLElement {
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._convId = this.getAttribute('convId');
-    this._sendOnEnter = this.getAttribute('sendOnEnter');
-    this._initNumOfItems = this.getAttribute('initNumOfItems');
+    this._sendOnEnter = this.getAttribute('sendOnEnter') !== null;
+    this._initNumOfItems = !!this.getAttribute('initNumOfItems') && Number(this.getAttribute('initNumOfItems'));
   }
 }
 

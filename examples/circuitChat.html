@@ -97,7 +97,10 @@
         <circuit-chat
           class="hidden"
           domain="circuitsandbox.net"
-          clientId="f06c51a30f0d4eb6acc05829c3e86266"></circuit-chat>
+          clientId="f06c51a30f0d4eb6acc05829c3e86266"
+          initNumOfItems="40"
+          sendOnEnter
+          ></circuit-chat>
     </div>
     <p>
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
@@ -110,8 +113,6 @@
         const inputEl = document.querySelector('input');
         const convBtn = document.querySelector('#selectConv');
         const convEl = document.querySelector('circuit-chat');
-        convEl.initNumOfItems = 100; // Inital number of items to retreive
-        convEl.sendOnEnter = true; // True to send new items on enter, false to not send on enter
         convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
         // After the conversation feed is loaded, will emit the conversation object
         convEl.addEventListener('loaded', res => {
