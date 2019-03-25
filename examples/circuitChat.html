@@ -25,15 +25,63 @@
       .conv-btn {
         margin-left: 20px;
       }
-
       circuit-chat {
+        /* Width of name in items feed*/
+        --name-width: 80px;
+
+        /* Padding of the item content */
+        --item-padding: 0 0 0 20px;
+      }
+
+      circuit-chat.hidden {
+        display: none;
+      }
+
+      /* Style of the send button */
+      circuit-chat::part(btn) {
+        color: green;
+        float: right;
+        padding-left: 10px;
+        margin-top: 15px;
+      }
+
+      /* Style of the input field */
+      circuit-chat::part(inp) {
+        width: 300px;
+        margin-top: 15px;
+      }
+
+      /* Main container */
+      circuit-chat::part(main-container) {
         width: 700px;
+      }
+
+      /* Conversation Title */
+      circuit-chat::part(conversation-title) {
+        padding-bottom: 10px;
+        font-size: 24px;
+      }
+
+      /* Style of the conversation feed */
+      circuit-chat::part(conversation-container) {
+          height: 550px;
+          border: 1px solid green;
+          overflow-y: auto;
+      }
+
+      /* Style of each conversation item in the feed */
+      circuit-chat::part(conversation-item) {
+        padding:  10px 5px;
+        border-top: 1px solid #dadada;
+        display: flex;
+        align-items: center;
+        word-wrap: break-word;
       }
     </style>
   </head>
   <body>
     <h2>Circuit Conversation</h2>
-    <p>Uses web components <code>circuit-conversation</code> to retrieve the conversation feed of the <code>target</code> attribute.</p>
+    <p>Uses web components <code>circuit-chat</code> to retrieve the conversation feed of the <code>target</code> attribute.</p>
     <div>
       Enter a Conversation Id to display the feed.<br>
       <input placeholder="conversation id">
@@ -42,10 +90,13 @@
         <div>Get Conversation Feed</div>
         <button class="conv-btn" id="get-conv">Click</button>
     </div>
-    <circuit-chat
-      domain="circuitsandbox.net"
-      clientId="f06c51a30f0d4eb6acc05829c3e86266"
-      poolUrl="https://guest-pool-tokens.circuit-apps.com/token"></circuit-chat>
+    <div>
+        <circuit-chat
+          class="hidden"
+          domain="circuitsandbox.net"
+          clientId="f06c51a30f0d4eb6acc05829c3e86266"
+          poolUrl="https://guest-pool-tokens.circuit-apps.com/token"></circuit-chat>
+    </div>
     <p>
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/blob/master/examples/guestCall.html">source</a> |
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
@@ -59,12 +110,16 @@
         const inputEl = document.querySelector('input');
         const convBtn = document.querySelector('#get-conv');
         const convEl = document.querySelector('circuit-chat');
-        convEl.size = 15;  // Size of component
         convEl.maxItems = 20; // Maximum number of past items to save in memory defaults to 100
         convEl.initNumOfItems = 100; // Inital number of items to retreive, must be lower than maxItems ( defaults to maxItems or 20)
         convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
+
+        // After the conversation feed is loaded, will emit the conversation object
+        convEl.addEventListener('loaded', res => {
+           const conversation = res.detail; // Can do something with the conversation here
+           convEl.className = '';
+        })
       });
     </script>
-
   </body>
 </html>

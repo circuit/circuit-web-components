@@ -1,28 +1,22 @@
 const template = document.createElement('template');
 const initHtml = `
 <style>
-
-.conversation-item {
-  padding: 10px 5px;
-  border-top: 1px solid #dadada;
-  display: flex;
-  align-items: center;
-  word-wrap: break-word
-}
 .name {
   align-self: flex-start;
-  min-width: 80px;
+  min-width: var(--name-width);
 }
 .item-content {
-  width: 570px;
-  padding-left: 20px;
+  padding: var(--item-padding);
   align-self: flex-start;
 }
 </style>
-<div class="conversation-container">
-  <div id="conversation-feed"></div>
-  <input type="text">
-  <button>Send</button>
+<div part="main-container">
+  <div part="conversation-title" id="conversation-title"></div>
+  <div part="conversation-container">
+    <div id="conversation-feed"></div>
+  </div>
+  <input part="inp" type="text">
+  <button part="btn">Send</button>
 </div>`;
 template.innerHTML = initHtml;
 export class CircuitConversation extends HTMLElement {
@@ -58,11 +52,6 @@ export class CircuitConversation extends HTMLElement {
     this._getConversation();
   }
 
-  set size(value) {
-    // Max size of conversations to show at once, defaults to 15
-    this._size = value ? value : 15;
-  }
-
   set maxItems(value) {
     // Max size of conversations store at once, defaults to 100
     this._maxItems = value ? value : 100;
@@ -89,7 +78,8 @@ export class CircuitConversation extends HTMLElement {
     this.root.appendChild(template.content.cloneNode(true));
 
     this._usersHashMap = {}; // Hashmap to store users names for the conversation feed
-    this._conversationFeed = this.root.getElementById('conversation-feed');
+    this._conversationFeed = this.root.getElementById('conversation-feed'); // Conversation Feed
+    this._conversationTitle = this.root.getElementById('conversation-title'); //  Title of the conversation
     this._input = this.root.querySelector('input');
     this._btn = this.root.querySelector('button');
   }
@@ -97,8 +87,7 @@ export class CircuitConversation extends HTMLElement {
   // Delay Circuit initialization to speed up page load. This way the SDK
   // can be loaded with 'async'
   async _init() {
-    this._conversationFeed.style.maxHeight = `${35 * this._size}px`;
-    this._conversationFeed.style.overflowY = 'auto';
+    // this._conversationFeed.style.overflowY = 'auto';
     this._client = Circuit.Client({
       domain: this._domain,
       client_id: this._clientId
@@ -237,20 +226,24 @@ export class CircuitConversation extends HTMLElement {
         newUsers.forEach(u => this._usersHashMap[u.userId] = u);
       }
       this._feed.forEach(item => this._conversationFeed.appendChild(this._createItemHtml(item)));
+      this._conversationTitle.innerHTML = this._conversation.topic && this._conversation.topic.length ? this._conversation.topic : this._conversation.topicPlaceholder;
       this._conversationFeed.display = 'block';
       this._input.display = 'block';
       this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
+      // Emit event that conversation feed is loaded
+      this.dispatchEvent(new CustomEvent('loaded', { detail: this._conversation }));
   }
 
   // Takes in an item and returns the inner html for the conversation feed
   _createItemHtml(item) {
     let node = document.createElement('div');
-    node.className = 'conversation-item';
+    node.part = 'conversation-item';
     node.id = item.itemId;
     node.innerHTML = `<div class="name">${this._usersHashMap[item.creatorId].displayName}:</div><div class="item-content">${item.text.content}</div>`;
     return node;
   }
 
+  // Send text item to circuit conversation
   async _sendTextItem() {
     const text = this._input && this._input.value;
     if (!this._client.loggedOnUser || !this._conversation || !text.length) {
@@ -264,9 +257,11 @@ export class CircuitConversation extends HTMLElement {
     }
   }
 
+  // Reset values if conversation changes
   _resetValues() {
     this._conversation = null;
     this._conversationFeed.innerHTML = '';
+    this._conversationTitle.innerHTML = '';
     this._feed = null;
   }
 
@@ -277,7 +272,6 @@ export class CircuitConversation extends HTMLElement {
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._poolUrl = this.getAttribute('poolUrl');
     this._convId = this.getAttribute('convId');
-    this._size = this.getAttribute('size');
     this._maxItems = this.getAttribute('maxItems');
     this._initNumOfItems = this.getAttribute('initNumOfItems');
   }
