@@ -47,13 +47,7 @@ export class CircuitConversation extends HTMLElement {
     if (!value || value === this._convId) {
         return;
     }
-    this._resetValues();
-    this._convId = value;
-    this._conversationFeed.display = 'none';
-    this._input.display = 'none';
-    // Reflect to attribute
-    this.setAttribute('convId', value);
-    this._getItems();
+    this._loadFeed();
   }
 
   get sendOnEnter() {
@@ -180,6 +174,23 @@ export class CircuitConversation extends HTMLElement {
     }
   }
 
+  _loadFeed(tries) {
+    // If component is loaded before Circuit is loaded on the page 
+    // Will try 5 times to load the component
+    tries = tries++ || 1;
+    if (tries > 5) {
+      return;
+    }
+    if (typeof Circuit === 'undefined') {
+      setTimeout(() => this._loadFeed(tries), 1000);
+      return;
+    }
+    this._resetValues();
+    this._conversationFeed.display = 'none';
+    this._input.display = 'none';
+    this._getItems();
+  }
+
   async _renderFeed() {
       const newUserIds = []; // Get New users for hashmap
       this._feed.forEach(item => {
@@ -247,6 +258,7 @@ export class CircuitConversation extends HTMLElement {
     this._convId = this.getAttribute('convId');
     this._sendOnEnter = this.getAttribute('sendOnEnter') !== null;
     this._initNumOfItems = !!this.getAttribute('initNumOfItems') && Number(this.getAttribute('initNumOfItems'));
+    this._convId && this._loadFeed();
   }
 }
 

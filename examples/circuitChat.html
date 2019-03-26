@@ -3,6 +3,7 @@
   <head>
     <script src="//unpkg.com/circuit-sdk@latest/circuit.min.js" async></script>
     <script type="module" src="../circuit-chat.js" defer></script>
+    <script type="module" src="../circuit-conversations-list.js" defer></script>
 
     <style>
       /* Global page styles which are inherited by element */
@@ -93,14 +94,23 @@
         <div>Get Conversation Feed</div>
         <button class="conv-btn" id="selectConv">Click</button>
     </div>
-    <div>
+    <!-- <div>
         <circuit-chat
           class="hidden"
           domain="circuitsandbox.net"
           clientId="f06c51a30f0d4eb6acc05829c3e86266"
           initNumOfItems="40"
+          convId="d8d28766-3acb-4c48-b437-e2ae18c56419"
           sendOnEnter
           ></circuit-chat>
+    </div> -->
+    <hr>
+    <div>
+        <circuit-conversations-list
+          domain="circuitsandbox.net"
+          clientId="f06c51a30f0d4eb6acc05829c3e86266"
+          active>
+        </circuit-conversations-list>
     </div>
     <p>
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
@@ -112,14 +122,18 @@
       document.addEventListener('DOMContentLoaded', () => {
         const inputEl = document.querySelector('input');
         const convBtn = document.querySelector('#selectConv');
-        const convEl = document.querySelector('circuit-chat');
-        convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
-        // After the conversation feed is loaded, will emit the conversation object
-        convEl.addEventListener('loaded', res => {
-          const conversation = res.detail.conv; // Can do something with the conversation here
-          convEl.className = '';
-          res.detail.focus();
-        })
+        // const convEl = document.querySelector('circuit-chat');
+        // convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
+        // // After the conversation feed is loaded, will emit the conversation object
+        // convEl.addEventListener('loaded', res => {
+        //   const conversation = res.detail.conv; // Can do something with the conversation here
+        //   convEl.className = '';
+        //   res.detail.focus();
+        // });
+        const convList = document.querySelector('circuit-conversations-list');
+        convBtn.addEventListener('click', e => convList.active = inputEl.value);
+          
+
       });
     </script>
   </body>
