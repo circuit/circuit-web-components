@@ -1,24 +1,5 @@
 const template = document.createElement('template');
-const initHtml = `
-<style>
-hr {
-  border: 0;
-  margin: 0;
-  padding-top: 3px;
-}
-.name {
-  align-self: flex-start;
-  min-width: var(--name-width);
-}
-.item-content {
-  padding: var(--item-padding);
-  align-self: flex-start;
-}
-</style>
-<div part="main-container">
-  <div>Conversations List</div>
-  <div id="conversations-list"></div>
-</div>`;
+const initHtml = '<select class="select-wide" part="conversation-list" id="conversations-list"></select>';
 template.innerHTML = initHtml;
 export class CircuitConversationsList extends HTMLElement {
   // Attributes we care about getting values from.
@@ -26,10 +7,27 @@ export class CircuitConversationsList extends HTMLElement {
     return ['active'];
   }
 
+  set client(client) {
+    if (!client || (this._client && this._client.loggedOnUser && client.loggedOnUser.userId === this._client.loggedOnUser.userId)) {
+      return;
+    }
+    this._client = client;
+  }
+
   set active(value) {
+    this._resetValues();
+    if (!value) {
+      return;
+    }
     this._active = value;
-    if (!this._active) {
-      this._resetValues();
+    this._active && this._loadConversations();
+  }
+
+  set _connected(isConnected) {
+    if (isConnected) {
+      this.setAttribute('connected', '');
+    } else {
+      this.removeAttribute('connected');
     }
   }
 
@@ -39,14 +37,6 @@ export class CircuitConversationsList extends HTMLElement {
 
   get connected() {
     return this.hasAttribute('connected');
-  }
-
-  set _connected(isConnected) {
-    if (isConnected) {
-      this.setAttribute('connected', '');
-    } else {
-      this.removeAttribute('connected');
-    }
   }
 
   get client() {
@@ -62,6 +52,7 @@ export class CircuitConversationsList extends HTMLElement {
 
     this._usersHashMap = {}; // Hashmap to store users names for the conversation feed
     this._conversationsListElement = this.root.getElementById('conversations-list'); // Conversation List Container
+    this._conversationsListElement.size = !!this.getAttribute('size') && Number(this.getAttribute('size')) || 5;
   }
 
   // Delay Circuit initialization to speed up page load. This way the SDK
@@ -74,13 +65,26 @@ export class CircuitConversationsList extends HTMLElement {
 
     // Event listeners
 
-    // this._btn.addEventListener('click', () => this._sendTextItem());
-    // this._input.addEventListener('keyup', evt => {
-    //   // Key Code 13 is ENTER
-    //   if (this._sendOnEnter && evt.keyCode === 13) {
-    //     this._sendTextItem();
-    //   }
-    // });
+    this._conversationsListElement.addEventListener('change', evt => {
+      const convId = evt.target.value;
+      const conversation = this._conversationsList.find(c => c.convId === convId);
+      this.dispatchEvent(new CustomEvent('selected', { 
+        detail: {
+          client: this._client,
+          conversation: conversation
+        }
+      }));
+    });
+
+    this._client.addEventListener('conversationUpdated', evt => {
+      const conversation = evt.conversation;
+      const index = this._conversationsList.findIndex(c => c.convId === conversation.convId);
+      if (index > -1 && conversation.type !== Circuit.Enums.ConversationType.DIRECT) {
+        this._conversationsList[index] = conversation;
+        const element = this.root.getElementById(conversation.convId);
+        element.innerHTML = conversation.topic || conversation.topicPlaceholder;
+      }
+    });
 
     this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
   }
@@ -123,7 +127,8 @@ export class CircuitConversationsList extends HTMLElement {
   async _getConversations() {
     try {
         await this._connect();
-        this._conversationsList = await this._client.getConversations();
+        const conversations = await this._client.getConversations({ numberOfConversations: this._numberOfConversations || 25});
+        this._conversationsList = conversations.reverse();
         this._renderConversations();
     } catch (err) {
         console.error(err);
@@ -132,9 +137,9 @@ export class CircuitConversationsList extends HTMLElement {
 
   // Get all direct conversation users for topic
   async _getDirectUsers() {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        const directConversations = this._conversations.filter(c => c.type === 'DIRECT');
+        const directConversations = this._conversationsList.filter(c => c.type === Circuit.Enums.ConversationType.DIRECT);
         if (!directConversations.length) {
           resolve();
           return;
@@ -147,8 +152,9 @@ export class CircuitConversationsList extends HTMLElement {
             }
           })
         });
-        const users = await this._client.getUsersById(Object.keys(directUserIds));
-        users.forEach(user => this._directUsers = user);
+        const directUsers = await this._client.getUsersById(Object.keys(directUserIds));
+        this._directUsers = {};
+        directUsers.forEach(u => this._directUsers[u.userId] = u);
         resolve();
       } catch (err) {
         reject(err);
@@ -157,48 +163,46 @@ export class CircuitConversationsList extends HTMLElement {
   }
 
   async _renderConversations() {
-    debugger;
     await this._getDirectUsers();
     this._conversationsList.forEach(conversation => this._conversationsListElement.appendChild(this._createConversationHtml(conversation)));
     // Emit event that conversations list is loaded
-    this.dispatchEvent(new CustomEvent('loaded'));
+    this.dispatchEvent(new CustomEvent('loaded', { detail: this._conversationsList }));
   }
 
   // Takes in an item and returns the inner html for the conversation feed
   _createConversationHtml(conversation) {
-    debugger;
-    let node = document.createElement('div');
-    node.part = 'conversation';
+    let node = document.createElement('option');
+    node.part = 'circuit-conversation';
     node.id = conversation.convId;
-    node.innerHTML = `<div class="conversation" id="${conversation.convId}">${conversation.type === 'DIRECT'}</div>`;
+    node.value = conversation.convId;
+    let topic = conversation.topic || conversation.topicPlaceholder;
+    if (conversation.type === Circuit.Enums.ConversationType.DIRECT) {
+      const directUserId = conversation.participants.find(p => p !== this._client.loggedOnUser.userId);
+      topic = this._directUsers[directUserId].displayName;
+    }
+    node.innerHTML = topic;
     return node;
   }
 
-  _loadConversations(tries) {
-    // If component is loaded before Circuit is loaded on the page 
-    // Will try 5 times to load the component
-    tries = tries++ || 1;
-    if (tries > 5) {
-      return;
-    }
-    if (typeof Circuit === 'undefined') {
-      setTimeout(() => this._loadConversations(tries), 1000);
-      return;
-    }
+  _loadConversations() {
     this._resetValues();
     this._getConversations();
   }
 
   // Reset values if conversation changes
   _resetValues() {
+    this._conversationsList = null;
+    this._directUsers = null;
   }
 
   // Lifecycle hooks
   connectedCallback() {
     // Non-watched attributes
+    this._client = this.getAttribute('client');
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._active = this.getAttribute('active') !== null;
+    this._numberOfConversations = !!this.getAttribute('numberOfConversations') && Number(this.getAttribute('numberOfConversations'));
     this._active && this._loadConversations();
   }
 }

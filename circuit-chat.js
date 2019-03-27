@@ -8,7 +8,6 @@ hr {
 }
 .name {
   align-self: flex-start;
-  min-width: var(--name-width);
 }
 .item-content {
   padding: var(--item-padding);
@@ -42,11 +41,20 @@ export class CircuitConversation extends HTMLElement {
     }
   }
 
+  set client(client) {
+    if (!client || (this._client && this._client.loggedOnUser && client.loggedOnUser.userId === this._client.loggedOnUser.userId)) {
+      return;
+    }
+    this._client = client;
+    this._addEventListeners();
+  }
+
   set convId(value) {
     // If no value given or if the conversation is the same as before
     if (!value || value === this._convId) {
         return;
     }
+    this._convId = value;
     this._loadFeed();
   }
 
@@ -83,54 +91,13 @@ export class CircuitConversation extends HTMLElement {
       domain: this._domain,
       client_id: this._clientId
     });
-
-    // Event listeners
-
-    // Send a message
-    this._btn.addEventListener('click', () => this._sendTextItem());
-    this._input.addEventListener('keyup', evt => {
-      // Key Code 13 is ENTER
-      if (this._sendOnEnter && evt.keyCode === 13) {
-        this._sendTextItem();
-      }
-    });
-
-    // New text item added to the conversation
-    this._client.addEventListener('itemAdded', async evt => {
-      const item = evt.item;
-      if (item.convId !== this._conversation.convId || item.type !== Circuit.Enums.ConversationItemType.TEXT) {
-        return;
-      }
-      // If user isn't stored in cache get user data
-      if (!this._usersHashMap[item.creatorId]) {
-        this._usersHashMap[item.creatorId] = await this._client.getUserById(item.creatorId);
-      }
-      this._feed.push(item);
-      this._conversationFeed.appendChild(this._createItemHtml(item));
-      this._focusFeed();
-    });
-
-    // An item in the feed was updated
-    this._client.addEventListener('itemUpdated', evt => {
-      const item = evt.item;
-      if (item.convId !== this._conversation.convId || item.type !== Circuit.Enums.ConversationItemType.TEXT) {
-        return;
-      }
-      let oldItem = this.root.getElementById(item.itemId);
-      if (oldItem) {
-        oldItem.innerHTML = this._createItemHtml(item).innerHTML;
-        this._focusFeed();
-      }
-    });
-
-    this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
   }
 
   async _connect() {
     if (!Circuit) {
       throw Error('circuit-sdk is not loaded');
     }
-    !this._client && this._init();
+    !this._client && this._init() && this._addEventListeners();;
 
     try {
       if (this._client.connectionState === 'Connected') {
@@ -165,26 +132,56 @@ export class CircuitConversation extends HTMLElement {
     try {
         await this._connect();
         this._conversation = await this._client.getConversationById(this._convId);
-        let feed = await this._client.getConversationItems(this._conversation.convId, { numberOfItems: this._initNumOfItems });
-        feed = feed.filter(f => f.type === Circuit.Enums.ConversationItemType.TEXT).reverse();
-        this._feed = feed.reverse();
+        const feed = await this._client.getConversationItems(this._conversation.convId, { numberOfItems: this._initNumOfItems });
+        this._feed = feed.filter(f => f.type === Circuit.Enums.ConversationItemType.TEXT);
         this._renderFeed();
     } catch (err) {
         console.error(err);
     }
   }
 
-  _loadFeed(tries) {
-    // If component is loaded before Circuit is loaded on the page 
-    // Will try 5 times to load the component
-    tries = tries++ || 1;
-    if (tries > 5) {
-      return;
-    }
-    if (typeof Circuit === 'undefined') {
-      setTimeout(() => this._loadFeed(tries), 1000);
-      return;
-    }
+  _addEventListeners() {
+    // Send a message
+    this._btn.addEventListener('click', () => this._sendTextItem());
+    this._input.addEventListener('keyup', evt => {
+      evt.stopImmediatePropagation();
+      // Key Code 13 is ENTER
+      if (this._sendOnEnter && evt.keyCode === 13) {
+        this._sendTextItem();
+      }
+    });
+  
+    // New text item added to the conversation
+    this._client.addEventListener('itemAdded', async evt => {
+      const item = evt.item;
+      if (!this._convId && item.convId !== this._conversation.convId || item.type !== Circuit.Enums.ConversationItemType.TEXT) {
+        return;
+      }
+      // If user isn't stored in cache get user data
+      if (!this._usersHashMap[item.creatorId]) {
+        this._usersHashMap[item.creatorId] = await this._client.getUserById(item.creatorId);
+      }
+      this._feed.push(item);
+      this._conversationFeed.appendChild(this._createItemHtml(item));
+      this._focusFeed();
+    });
+
+    // An item in the feed was updated
+    this._client.addEventListener('itemUpdated', evt => {
+      const item = evt.item;
+      if (item.convId !== this._conversation.convId || item.type !== Circuit.Enums.ConversationItemType.TEXT) {
+        return;
+      }
+      let oldItem = this.root.getElementById(item.itemId);
+      if (oldItem) {
+        oldItem.innerHTML = this._createItemHtml(item).innerHTML;
+        this._focusFeed();
+      }
+    });
+    this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
+  }
+
+  _loadFeed() {
     this._resetValues();
     this._conversationFeed.display = 'none';
     this._input.display = 'none';
@@ -203,14 +200,24 @@ export class CircuitConversation extends HTMLElement {
         const newUsers = await this._client.getUsersById(newUserIds);
         newUsers.forEach(u => this._usersHashMap[u.userId] = u);
       }
+      let topic = this._conversation.topic || this._conversation.topicPlaceholder;
+      if (this._conversation.type === Circuit.Enums.ConversationType.DIRECT) {
+        const directUserId = this._conversation.participants.find(p => p !== this._client.loggedOnUser.userId);
+        if (!this._usersHashMap[directUserId]) {
+          this._usersHashMap[directUserId] = await this._client.getUserById(directUserId);
+        }
+        topic = this._usersHashMap[directUserId].displayName;
+      }
       this._feed.forEach(item => this._conversationFeed.appendChild(this._createItemHtml(item)));
-      this._conversationTitle.innerHTML = this._conversation.topic && this._conversation.topic.length ? this._conversation.topic : this._conversation.topicPlaceholder;
+      this._conversationTitle.innerHTML =  topic;
       this._conversationFeed.display = 'block';
       this._input.display = 'block';
       // Emit event that conversation feed is loaded
-      this.dispatchEvent(new CustomEvent('loaded', { detail: { 
-        conv: this._conversation, 
-        focus: () =>  this._focusFeed()
+      this.dispatchEvent(new CustomEvent('loaded', { 
+        detail: {
+          client: this._client,
+          conversation: this._conversation, 
+          focus: () =>  this._focusFeed()
         } 
       }));
   }
@@ -220,7 +227,8 @@ export class CircuitConversation extends HTMLElement {
     let node = document.createElement('div');
     node.part = 'conversation-item';
     node.id = item.itemId;
-    node.innerHTML = `<div class="name">${this._usersHashMap[item.creatorId].displayName}:</div><div class="item-content">${item.text.content}</div>`;
+    const content = item.text.state === Circuit.Constants.TextItemState.DELETED ? 'Message deleted' : item.text.content;
+    node.innerHTML = `<div part="circuit-name" class="name">${this._usersHashMap[item.creatorId].displayName}:</div><div class="item-content">${content}</div>`;
     return node;
   }
 
@@ -239,7 +247,7 @@ export class CircuitConversation extends HTMLElement {
   }
 
   _focusFeed() {
-    this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
+    !!this._feed.length && this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
   }
 
   // Reset values if conversation changes
@@ -253,6 +261,7 @@ export class CircuitConversation extends HTMLElement {
   // Lifecycle hooks
   connectedCallback() {
     // Non-watched attributes
+    this._client = this.getAttribute('client');
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._convId = this.getAttribute('convId');
