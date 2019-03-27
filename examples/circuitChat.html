@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="//unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
     <script src="//unpkg.com/circuit-sdk@latest/circuit.min.js" async></script>
     <script type="module" src="../circuit-chat.js" defer></script>
     <script type="module" src="../circuit-conversations-list.js" defer></script>
-
     <style>
       /* Global page styles which are inherited by element */
       body {
@@ -20,120 +20,127 @@
       .conversation-button-container { 
         padding-bottom: 20px;
         display: flex;
-        align-content: center;
+        align-items: center;
       }
 
       .conv-btn {
         margin-left: 20px;
       }
-      circuit-chat {
-        /* Width of name in items feed*/
-        --name-width: 80px;
 
-        /* Padding of the item content */
-        --item-padding: 0 0 0 20px;
+      .component-container {
+        display: flex;
       }
 
-      circuit-chat::hr {
-        border: 5px solid brown;
+      .conversation-list-container {
+        padding-right: 20px;
       }
 
-      circuit-chat.hidden {
-        display: none;
-      }
-
-      /* Style of the send button */
-      circuit-chat::part(btn) {
-        float: right;
-        padding-left: 10px;
-        margin-top: 15px;
-      }
-
-      /* Style of the input field */
-      circuit-chat::part(inp) {
-        width: 300px;
-        margin-top: 15px;
-      }
-
-      /* Main container */
-      circuit-chat::part(main-container) {
-        width: 700px;
-      }
-
-      /* Conversation Title */
-      circuit-chat::part(conversation-title) {
-        padding-bottom: 10px;
+      .converation-list-title {
+        font: Monospace;
         font-size: 24px;
       }
 
-      /* Style of the conversation feed */
-      circuit-chat::part(conversation-container) {
-          height: 550px;
-          border: 1px solid green;
-          overflow-y: auto;
+      circuit-conversations-list {
+        --min-width: 200px;
+        --max-height: 500px;
+        --conversation-height: 25px;
+
+        /* Below are more commented out styles using css variables*/
+
+        /* --conversation-border: 1px solid #dadada;
+        --conversation-padding: 2px 0;
+        --conversation-font: sans-serif;
+        --conversation-font-size: 13px; */
       }
 
-      /* Style of each conversation item in the feed */
-      circuit-chat::part(conversation-item) {
-        padding:  10px 5px;
-        border-top: 1px solid #dadada;
-        display: flex;
-        align-items: center;
-        word-wrap: break-word;
+      circuit-chat {
+        padding-left: 30px;
+        --width: 500px;
+        --chat-height: 250px;
+        --item-padding: 5px 0;
+
+        /* Below are more commented out styles using css variables*/
+
+        /* --title-font: Monospace;
+        --title-font-size: 24px;
+        --title-padding: 0 0 10px 0;
+        --item-font: sans-serif;
+        --item-font-size: 13px;
+        --item-border: 1px solid #dadada;
+        --input-margin: 15px 0 0 0;
+        --input-float: right; */
+      }
+
+      /* Hide both until he components are finished loading */
+      .hidden, circuit-chat.hidden, circuit-conversations-list.hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
-    <h2>Circuit Conversation</h2>
-    <p>Uses web components <code>circuit-chat</code> to retrieve the conversation feed of the <code>target</code> attribute.</p>
-    <div>
-      Enter a Conversation Id to display the feed.<br>
-      <input placeholder="conversation id">
-    </div>
+    <h2>Circuit Conversations & Circuit Chat</h2>
+    <p>Uses web component <code>circuit-conversations-list</code> to retrieve the conversation list.<br>
+      Select a conversation from the list to display the conversation feed using the <code>circuit-chat</code> web component.
+    </p>
     <div class="conversation-button-container">
-        <div>Get Conversation Feed</div>
-        <button class="conv-btn" id="selectConv">Click</button>
+      <div>Get Conversations</div>
+      <button class="conv-btn" id="selectConv">Click</button>
     </div>
-    <!-- <div>
-        <circuit-chat
+    <hr>
+
+    <div class="component-container">
+      <div class="conversation-list-container" id="conversation-list-container">
+        <div id="converation-list-title" class="converation-list-title hidden">Conversations List</div>
+        <circuit-conversations-list
           class="hidden"
           domain="circuitsandbox.net"
           clientId="f06c51a30f0d4eb6acc05829c3e86266"
-          initNumOfItems="40"
-          convId="d8d28766-3acb-4c48-b437-e2ae18c56419"
-          sendOnEnter
-          ></circuit-chat>
-    </div> -->
-    <hr>
-    <div>
-        <circuit-conversations-list
-          domain="circuitsandbox.net"
-          clientId="f06c51a30f0d4eb6acc05829c3e86266"
-          active>
-        </circuit-conversations-list>
+          numberOfConversations="10"></circuit-conversations-list>
+      </div>
+      <circuit-chat
+        showTitle="true"
+        class="hidden"
+        domain="circuitsandbox.net"
+        clientId="f06c51a30f0d4eb6acc05829c3e86266"
+        initNumOfItems="40"
+        sendOnEnter></circuit-chat>
     </div>
     <p>
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
       <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
       <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a>
     </p>
-
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const inputEl = document.querySelector('input');
         const convBtn = document.querySelector('#selectConv');
-        // const convEl = document.querySelector('circuit-chat');
-        // convBtn.addEventListener('click', e => convEl.convId = inputEl.value);
-        // // After the conversation feed is loaded, will emit the conversation object
-        // convEl.addEventListener('loaded', res => {
-        //   const conversation = res.detail.conv; // Can do something with the conversation here
-        //   convEl.className = '';
-        //   res.detail.focus();
-        // });
+        const convEl = document.querySelector('circuit-chat');
         const convList = document.querySelector('circuit-conversations-list');
-        convBtn.addEventListener('click', e => convList.active = inputEl.value);
-          
+        const convListContainer = document.getElementById('converation-list-title');
+        convBtn.addEventListener('click', () => convList.active = true);
 
+        // Event Listeners
+
+        // Conversation list finished loading event
+        convList.addEventListener('loaded', evt => {
+          const conversations = evt.detail; // Do something with conversations list here
+          convList.classList.remove('hidden');
+          convListContainer.classList.remove('hidden');
+        });
+
+        // Conversation selected event
+        convList.addEventListener('selected', evt => {
+          const conversation = evt.detail.conversation; // Do something with selected conversation here
+          convEl.client = evt.detail.client; //  Same client as the Conversation List component
+          convEl.convId = conversation.convId;
+        });
+  
+        // Conversation finished loading event
+        convEl.addEventListener('loaded', res => {
+          const conversation = res.detail.conv; // Can do something with the conversation here
+          convEl.classList.remove('hidden');
+          res.detail.focus();
+        });
       });
     </script>
   </body>
