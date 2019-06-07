@@ -19,7 +19,7 @@ hr {
   overflow-y: auto;
   word-break: break-word;
 }
-.conversation-title {
+#conversationTitle {
   font-family: var(--title-font);
   font-size: var(--title-font-size);
   padding: var(--title-padding);
@@ -34,7 +34,7 @@ hr {
   padding: var(--item-padding);
   border: var(--item-border);
 }
-.input-container {
+#inputContainer {
   margin: var(--input-margin);
   float: var(--input-float);
 }
@@ -43,11 +43,11 @@ hr {
 }
 </style>
 <div class="main-container">
-  <div class="conversation-title" id="conversation-title"></div>
+  <div id="conversationTitle"></div>
   <div class="conversation-container">
-    <div class="conversation-feed" id="conversation-feed"></div>
+    <div id="conversationFeed"></div>
   </div>
-  <div class="input-container" id="input-container">
+  <div id="inputContainer">
     <input class="inp" type="text">
     <button class="chat-btn">Send</button>
   </div>
@@ -79,9 +79,13 @@ export class CircuitConversation extends HTMLElement {
   }
 
   set convId(value) {
-    // If no value given or if the conversation is the same as before
-    if (!value || value === this._convId) {
-        return;
+    // If no value given throw an error
+    if (!value) {
+      throw new Error('No conversation Id given');
+    }
+    // If value given is the same as before
+    if (value === this._convId) {
+      return;
     }
     this._convId = value;
     this._loadFeed();
@@ -107,9 +111,9 @@ export class CircuitConversation extends HTMLElement {
     this.root.appendChild(template.content.cloneNode(true));
 
     this._usersHashMap = {}; // Hashmap to store users names for the conversation feed
-    this._conversationFeed = this.root.getElementById('conversation-feed'); // Conversation Feed
-    this._conversationTitle = this.root.getElementById('conversation-title'); //  Title of the conversation
-    this._inputContainer = this.root.getElementById('input-container');
+    this._conversationFeed = this.root.getElementById('conversationFeed'); // Conversation Feed
+    this._conversationTitle = this.root.getElementById('conversationTitle'); //  Title of the conversation
+    this._inputContainer = this.root.getElementById('inputContainer');
     this._input = this.root.querySelector('input');
     this._btn = this.root.querySelector('button');
   }
@@ -125,7 +129,7 @@ export class CircuitConversation extends HTMLElement {
 
   async _connect() {
     if (!Circuit) {
-      throw Error('circuit-sdk is not loaded');
+      throw new Error('circuit-sdk is not loaded');
     }
     !this._client && this._init() && this._addEventListeners();;
 
@@ -166,7 +170,7 @@ export class CircuitConversation extends HTMLElement {
         this._feed = feed.filter(f => f.type === Circuit.Enums.ConversationItemType.TEXT);
         this._renderFeed();
     } catch (err) {
-        console.error(err);
+        console.error('Error retrieving the conversation', err);
     }
   }
 
@@ -193,7 +197,11 @@ export class CircuitConversation extends HTMLElement {
       }
       this._feed.push(item);
       this._conversationFeed.appendChild(this._createItemHtml(item));
-      this._focusFeed();
+      this.dispatchEvent(new CustomEvent('itemAdded', { 
+        detail: {
+          item: item
+        } 
+      }));
     });
 
     // An item in the feed was updated
@@ -205,9 +213,25 @@ export class CircuitConversation extends HTMLElement {
       let oldItem = this.root.getElementById(item.itemId);
       if (oldItem) {
         oldItem.innerHTML = this._createItemHtml(item).innerHTML;
-        this._focusFeed();
+        this.dispatchEvent(new CustomEvent('itemUpdated', { 
+          detail: {
+            item: item
+          } 
+        }));
       }
     });
+
+    this._client.addEventListener('conversationUpdated', evt => {
+      const conversation = evt.conversation;
+      if (conversation.convId !== this._conversation.convId) {
+        return;
+      }
+      this._conversation = conversation;
+      if (this._showTitle) {
+        this._conversationTitle.innerText = conversation.topic || conversation.topicPlaceholder;
+      }
+    });
+
     this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
   }
 
@@ -240,14 +264,11 @@ export class CircuitConversation extends HTMLElement {
       if (this._showTitle) {
         this._conversationTitle.innerText = topic;
       }
-      this._conversationFeed.display = 'block';
-      this._inputContainer.display = 'block';
       // Emit event that conversation feed is loaded
       this.dispatchEvent(new CustomEvent('loaded', { 
         detail: {
           client: this._client,
-          conversation: this._conversation, 
-          focus: () =>  this._focusFeed()
+          conversation: this._conversation,
         } 
       }));
   }
@@ -272,7 +293,7 @@ export class CircuitConversation extends HTMLElement {
       await this._client.addTextItem(this._convId, text);
       this._input.value = '';
     } catch (err) {
-      console.error(err);
+      console.error('Error sending message to conversation', err);
     }
   }
 
@@ -285,8 +306,6 @@ export class CircuitConversation extends HTMLElement {
     this._conversation = null;
     this._conversationFeed.innerHTML = '';
     this._conversationTitle.innerHTML = '';
-    this._conversationFeed.display = 'none';
-    this._inputContainer.display = 'none';
     this._feed = null;
   }
 
@@ -300,6 +319,7 @@ export class CircuitConversation extends HTMLElement {
     this._sendOnEnter = this.getAttribute('sendOnEnter') !== null;
     this._initNumOfItems = !!this.getAttribute('initNumOfItems') && Number(this.getAttribute('initNumOfItems'));
     this._showTitle = (!!this.getAttribute('showTitle') && this.getAttribute('showTitle') === 'true') || false;
+    this._focus = this._focusFeed;
     this._convId && this._loadFeed();
   }
 }

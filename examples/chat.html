@@ -23,21 +23,21 @@
         align-items: center;
       }
 
-      .conv-btn {
-        margin-left: 20px;
-      }
-
-      .component-container {
-        display: flex;
-      }
-
-      .conversation-list-container {
+      #conversationListContainer {
         padding-right: 20px;
       }
 
       .converation-list-title {
         font: Monospace;
         font-size: 24px;
+      }
+
+      .component-container {
+        display: flex;
+      }
+
+      #selectConv {
+        margin-left: 20px;
       }
 
       circuit-conversations-list {
@@ -72,7 +72,7 @@
       }
 
       /* Hide both until he components are finished loading */
-      .hidden, circuit-chat.hidden, circuit-conversations-list.hidden {
+      .hidden {
         display: none;
       }
     </style>
@@ -83,16 +83,14 @@
       Select a conversation from the list to display the conversation feed using the <code>circuit-chat</code> web component.
     </p>
     <div class="conversation-button-container">
-      <div>Get Conversations</div>
-      <button class="conv-btn" id="selectConv">Click</button>
+      <button id="selectConv">Get Conversations</button>
     </div>
     <hr>
 
     <div class="component-container">
-      <div class="conversation-list-container" id="conversation-list-container">
-        <div id="converation-list-title" class="converation-list-title hidden">Conversations List</div>
+      <div id="conversationListContainer" class="hidden">
+        <div class="converation-list-title">Conversations List</div>
         <circuit-conversations-list
-          class="hidden"
           domain="circuitsandbox.net"
           clientId="f06c51a30f0d4eb6acc05829c3e86266"
           numberOfConversations="10"></circuit-conversations-list>
@@ -100,47 +98,56 @@
       <circuit-chat
         showTitle="true"
         class="hidden"
-        domain="circuitsandbox.net"
-        clientId="f06c51a30f0d4eb6acc05829c3e86266"
         initNumOfItems="40"
         sendOnEnter></circuit-chat>
     </div>
     <p>
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/blob/master/examples/chat.html">source</a> |
       <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
       <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
       <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a>
     </p>
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const inputEl = document.querySelector('input');
-        const convBtn = document.querySelector('#selectConv');
-        const convEl = document.querySelector('circuit-chat');
-        const convList = document.querySelector('circuit-conversations-list');
-        const convListContainer = document.getElementById('converation-list-title');
-        convBtn.addEventListener('click', () => convList.active = true);
+      const convBtn = document.querySelector('#selectConv');
+      const circuitChat = document.querySelector('circuit-chat');
+      const convList = document.querySelector('circuit-conversations-list');
+      const conversationListContainer = document.getElementById('conversationListContainer');
 
-        // Event Listeners
+      // Event Listeners
 
-        // Conversation list finished loading event
-        convList.addEventListener('loaded', evt => {
-          const conversations = evt.detail; // Do something with conversations list here
-          convList.classList.remove('hidden');
-          convListContainer.classList.remove('hidden');
-        });
+      // Fetch conversations when button is clicked
+      convBtn.addEventListener('click', () => convList._fetchConversations());
 
-        // Conversation selected event
-        convList.addEventListener('selected', evt => {
-          const conversation = evt.detail.conversation; // Do something with selected conversation here
-          convEl.client = evt.detail.client; //  Same client as the Conversation List component
-          convEl.convId = conversation.convId;
-        });
-  
-        // Conversation finished loading event
-        convEl.addEventListener('loaded', res => {
-          const conversation = res.detail.conv; // Can do something with the conversation here
-          convEl.classList.remove('hidden');
-          res.detail.focus();
-        });
+      // Conversation list finished loading event
+      convList.addEventListener('loaded', evt => {
+        const conversations = evt.detail; // Do something with conversations list here
+        conversationListContainer.classList.remove('hidden');
+        circuitChat.classList.add('hidden'); // Hide conversation until it is loaded again
+      });
+
+      // Conversation selected event
+      convList.addEventListener('selected', evt => {
+        circuitChat.classList.add('hidden'); // Hide conversation until it is loaded again
+        const conversation = evt.detail.conversation; // Do something with selected conversation here
+        circuitChat.client = evt.detail.client; //  Same client as the Conversation List component
+        circuitChat.convId = conversation.convId;
+      });
+
+      // Conversation finished loading event
+      circuitChat.addEventListener('loaded', res => {
+        const conversation = res.detail.conv; // Can do something with the conversation here
+        circuitChat.classList.remove('hidden');
+        circuitChat._focus();
+      });
+
+      circuitChat.addEventListener('itemAdded', res => {
+        console.log('New item added', res.detail.item);
+        circuitChat._focus(); // Focus the chat when a new item is added
+      });
+
+      circuitChat.addEventListener('itemUpdated', res => {
+        console.log('Item updated', res.detail.item);
+        circuitChat._focus(); // Focus the chat when a new item is updated
       });
     </script>
   </body>

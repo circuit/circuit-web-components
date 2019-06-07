@@ -1,7 +1,7 @@
 const template = document.createElement('template');
 template.innerHTML = `
 <style>
-.conversation-list {
+#conversationList {
   overflow-y: auto;
   min-width: var(--min-width);
   max-height: var(--max-height);
@@ -16,14 +16,10 @@ template.innerHTML = `
   padding: var(--conversation-padding);
 }
 </style>
-<select class="select-wide conversation-list" 
-        id="conversations-list">
+<select class="select-wide" 
+        id="conversationList">
 </select>`;
 export class CircuitConversationsList extends HTMLElement {
-  // Attributes we care about getting values from.
-  static get observedAttributes() {
-    return ['active'];
-  }
 
   set client(client) {
     if (!client || (this._client && this._client.loggedOnUser && client.loggedOnUser.userId === this._client.loggedOnUser.userId)) {
@@ -32,25 +28,12 @@ export class CircuitConversationsList extends HTMLElement {
     this._client = client;
   }
 
-  set active(value) {
-    this._resetValues();
-    if (!value) {
-      return;
-    }
-    this._active = value;
-    this._active && this._loadConversations();
-  }
-
   set _connected(isConnected) {
     if (isConnected) {
       this.setAttribute('connected', '');
     } else {
       this.removeAttribute('connected');
     }
-  }
-
-  get active() {
-    return this._active;
   }
 
   get connected() {
@@ -69,7 +52,7 @@ export class CircuitConversationsList extends HTMLElement {
     this.root.appendChild(template.content.cloneNode(true));
 
     this._usersHashMap = {}; // Hashmap to store users names for the conversation feed
-    this._conversationsListElement = this.root.getElementById('conversations-list'); // Conversation List Container
+    this._conversationsListElement = this.root.getElementById('conversationList'); // Conversation List Container
     this._conversationsListElement.size = !!this.getAttribute('size') && Number(this.getAttribute('size')) || 5;
   }
 
@@ -102,7 +85,17 @@ export class CircuitConversationsList extends HTMLElement {
         this._conversationsList[index] = conversation;
         const element = this.root.getElementById(conversation.convId);
         element.innerHTML = conversation.topic || conversation.topicPlaceholder;
+        console.log('Conversation updated', conversation);
       }
+    });
+
+    // If a new conversation is created, update the list
+    this._client.addEventListener('conversationCreated', evt => {
+      const conversation = evt.conversation;
+      const newConversationElm = this._createConversationHtml(conversation);
+      this._conversationsList = [conversation, ...this._conversationsList];
+      this._conversationsListElement.insertBefore(newConversationElm, this._conversationsListElement[0]);
+      console.log('New conversation created', conversation);
     });
 
     this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
@@ -150,7 +143,7 @@ export class CircuitConversationsList extends HTMLElement {
         this._conversationsList = conversations.reverse();
         this._renderConversations();
     } catch (err) {
-        console.error(err);
+        console.error('Error retrieving conversations', err);
     }
   }
 
@@ -220,9 +213,8 @@ export class CircuitConversationsList extends HTMLElement {
     this._client = this.getAttribute('client');
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
-    this._active = this.getAttribute('active') !== null;
     this._numberOfConversations = !!this.getAttribute('numberOfConversations') && Number(this.getAttribute('numberOfConversations'));
-    this._active && this._loadConversations();
+    this._fetchConversations = this._loadConversations;
   }
 }
 
