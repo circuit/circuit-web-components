@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="//unpkg.com/@webcomponents/webcomponentsjs/webcomponents-bundle.js" defer></script>
+    <script src="//unpkg.com/circuit-sdk@latest/circuit.min.js" async></script>
+    <script type="module" src="../circuit-chat.js" defer></script>
+    <script type="module" src="../circuit-conversations-list.js" defer></script>
+    <style>
+      /* Global page styles which are inherited by element */
+      body {
+        font-family: sans-serif;
+        font-size: 13px;
+      }
+
+      input {
+        width: 150px;
+        margin: 5px 0px 10px 0px;
+      }
+
+      .conversation-button-container { 
+        padding-bottom: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      .conv-btn {
+        margin-left: 20px;
+      }
+
+      .component-container {
+        display: flex;
+      }
+
+      .conversation-list-container {
+        padding-right: 20px;
+      }
+
+      .converation-list-title {
+        font: Monospace;
+        font-size: 24px;
+      }
+
+      circuit-conversations-list {
+        --min-width: 200px;
+        --max-height: 500px;
+        --conversation-height: 25px;
+
+        /* Below are more commented out styles using css variables*/
+
+        /* --conversation-border: 1px solid #dadada;
+        --conversation-padding: 2px 0;
+        --conversation-font: sans-serif;
+        --conversation-font-size: 13px; */
+      }
+
+      circuit-chat {
+        padding-left: 30px;
+        --width: 500px;
+        --chat-height: 250px;
+        --item-padding: 5px 0;
+
+        /* Below are more commented out styles using css variables*/
+
+        /* --title-font: Monospace;
+        --title-font-size: 24px;
+        --title-padding: 0 0 10px 0;
+        --item-font: sans-serif;
+        --item-font-size: 13px;
+        --item-border: 1px solid #dadada;
+        --input-margin: 15px 0 0 0;
+        --input-float: right; */
+      }
+
+      /* Hide both until he components are finished loading */
+      .hidden, circuit-chat.hidden, circuit-conversations-list.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Circuit Conversations & Circuit Chat</h2>
+    <p>Uses web component <code>circuit-conversations-list</code> to retrieve the conversation list.<br>
+      Select a conversation from the list to display the conversation feed using the <code>circuit-chat</code> web component.
+    </p>
+    <div class="conversation-button-container">
+      <div>Get Conversations</div>
+      <button class="conv-btn" id="selectConv">Click</button>
+    </div>
+    <hr>
+
+    <div class="component-container">
+      <div class="conversation-list-container" id="conversation-list-container">
+        <div id="converation-list-title" class="converation-list-title hidden">Conversations List</div>
+        <circuit-conversations-list
+          class="hidden"
+          domain="circuitsandbox.net"
+          clientId="f06c51a30f0d4eb6acc05829c3e86266"
+          numberOfConversations="10"></circuit-conversations-list>
+      </div>
+      <circuit-chat
+        showTitle="true"
+        class="hidden"
+        domain="circuitsandbox.net"
+        clientId="f06c51a30f0d4eb6acc05829c3e86266"
+        initNumOfItems="40"
+        sendOnEnter></circuit-chat>
+    </div>
+    <p>
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
+      <a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
+      <a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a>
+    </p>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const inputEl = document.querySelector('input');
+        const convBtn = document.querySelector('#selectConv');
+        const convEl = document.querySelector('circuit-chat');
+        const convList = document.querySelector('circuit-conversations-list');
+        const convListContainer = document.getElementById('converation-list-title');
+        convBtn.addEventListener('click', () => convList.active = true);
+
+        // Event Listeners
+
+        // Conversation list finished loading event
+        convList.addEventListener('loaded', evt => {
+          const conversations = evt.detail; // Do something with conversations list here
+          convList.classList.remove('hidden');
+          convListContainer.classList.remove('hidden');
+        });
+
+        // Conversation selected event
+        convList.addEventListener('selected', evt => {
+          const conversation = evt.detail.conversation; // Do something with selected conversation here
+          convEl.client = evt.detail.client; //  Same client as the Conversation List component
+          convEl.convId = conversation.convId;
+        });
+  
+        // Conversation finished loading event
+        convEl.addEventListener('loaded', res => {
+          const conversation = res.detail.conv; // Can do something with the conversation here
+          convEl.classList.remove('hidden');
+          res.detail.focus();
+        });
+      });
+    </script>
+  </body>
+</html>
