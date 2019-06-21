@@ -95,6 +95,10 @@ export class CircuitConversation extends HTMLElement {
     return this._sendOnEnter;
   }
 
+  get showTitle() {
+    return this._showTitle;
+  }
+
   get convId() {
     return this._convId;
   }
@@ -168,6 +172,9 @@ export class CircuitConversation extends HTMLElement {
         this._conversation = await this._client.getConversationById(this._convId);
         const feed = await this._client.getConversationItems(this._conversation.convId, { numberOfItems: this._initNumOfItems });
         this._feed = feed.filter(f => f.type === Circuit.Enums.ConversationItemType.TEXT);
+        if (this._showNewItemsTop) {
+          this._feed = this._feed.reverse();
+        }
         this._renderFeed();
     } catch (err) {
         console.error('Error retrieving the conversation', err);
@@ -195,8 +202,9 @@ export class CircuitConversation extends HTMLElement {
       if (!this._usersHashMap[item.creatorId]) {
         this._usersHashMap[item.creatorId] = await this._client.getUserById(item.creatorId);
       }
-      this._feed.push(item);
-      this._conversationFeed.appendChild(this._createItemHtml(item));
+      this._showNewItemsTop ? this._feed.unshift(item) : this._feed.push(item);
+      const itemHtml = this._createItemHtml(item);
+      this._showNewItemsTop ? this._conversationFeed.insertBefore(itemHtml, this._conversationFeed.firstChild) : this._conversationFeed.appendChild(itemHtml);
       this.dispatchEvent(new CustomEvent('itemAdded', { 
         detail: {
           item: item
@@ -267,8 +275,8 @@ export class CircuitConversation extends HTMLElement {
       // Emit event that conversation feed is loaded
       this.dispatchEvent(new CustomEvent('loaded', { 
         detail: {
-          client: this._client,
-          conversation: this._conversation,
+          client: this._client, // Expose the client so multiple components can use the same client
+          conversationItems: this._feed,
         } 
       }));
   }
@@ -297,16 +305,21 @@ export class CircuitConversation extends HTMLElement {
     }
   }
 
-  _focusFeed() {
-    !!this._feed.length && this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
-  }
-
   // Reset values if conversation changes
   _resetValues() {
     this._conversation = null;
     this._conversationFeed.innerHTML = '';
     this._conversationTitle.innerHTML = '';
     this._feed = null;
+  }
+
+  // Exposed method to scroll to top or bottom of chat. Defaults to bottom if no parameter is passed.
+  scrollTo(direction) {
+    if (direction === 'bottom') {
+      !!this._feed.length && this.root.getElementById(this._feed[this._feed.length -1].itemId).scrollIntoView();
+    } else if (direction === 'top') {
+      !!this._feed.length && this.root.getElementById(this._feed[0].itemId).scrollIntoView();
+    }
   }
 
   // Lifecycle hooks
@@ -317,9 +330,10 @@ export class CircuitConversation extends HTMLElement {
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._convId = this.getAttribute('convId');
     this._sendOnEnter = this.getAttribute('sendOnEnter') !== null;
+    this._showTitle = this.getAttribute('showTitle') !== null;
+    this._showNewItemsTop = this.getAttribute('showNewItemsTop') !== null;
     this._initNumOfItems = !!this.getAttribute('initNumOfItems') && Number(this.getAttribute('initNumOfItems'));
-    this._showTitle = (!!this.getAttribute('showTitle') && this.getAttribute('showTitle') === 'true') || false;
-    this._focus = this._focusFeed;
+    this.scrollTo = this.scrollTo; // Expose scrollTo externally
     this._convId && this._loadFeed();
   }
 }
