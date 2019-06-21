@@ -96,7 +96,6 @@ export class CircuitCallButton extends HTMLElement {
     });
 
     this._client.addEventListener('connectionStateChanged', e => {
-      console.log('connectionStateChanged event', e);
       this._connected = e.state === 'Connected';
     });
 
@@ -129,7 +128,6 @@ export class CircuitCallButton extends HTMLElement {
     });
 
     this._client.addEventListener('callEnded', e => {
-      console.log('callEnded event', e);
       this.call = null;
       this.removeAttribute('inprogress');
       this._btn.textContent = this._defaultText;

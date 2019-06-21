@@ -44,6 +44,14 @@ export class CircuitConversationsList extends HTMLElement {
     return this._client;
   }
 
+  get conversations() {
+    return this._conversationsList;
+  }
+
+  get users() {
+    return this._directUsers;
+  }
+
   constructor() {
     super();
     this._client = null;
@@ -85,7 +93,11 @@ export class CircuitConversationsList extends HTMLElement {
         this._conversationsList[index] = conversation;
         const element = this.root.getElementById(conversation.convId);
         element.innerHTML = conversation.topic || conversation.topicPlaceholder;
-        console.log('Conversation updated', conversation);
+        this.dispatchEvent(new CustomEvent('conversationUpdated', {
+          detail: {
+            conversation: conversation
+          }
+        }));
       }
     });
 
@@ -94,8 +106,12 @@ export class CircuitConversationsList extends HTMLElement {
       const conversation = evt.conversation;
       const newConversationElm = this._createConversationHtml(conversation);
       this._conversationsList = [conversation, ...this._conversationsList];
-      this._conversationsListElement.insertBefore(newConversationElm, this._conversationsListElement[0]);
-      console.log('New conversation created', conversation);
+      this._conversationsListElement.insertBefore(newConversationElm, this._conversationsListElement.firstChild);
+      this.dispatchEvent(new CustomEvent('conversationCreated', {
+        detail: {
+          conversation: conversation
+        }
+      }));
     });
 
     this.dispatchEvent(new CustomEvent('initialized', { detail: this.client }));
@@ -178,7 +194,13 @@ export class CircuitConversationsList extends HTMLElement {
     await this._getDirectUsers();
     this._conversationsList.forEach(conversation => this._conversationsListElement.appendChild(this._createConversationHtml(conversation)));
     // Emit event that conversations list is loaded
-    this.dispatchEvent(new CustomEvent('loaded', { detail: this._conversationsList }));
+    this.dispatchEvent(new CustomEvent('loaded', { 
+      detail: {
+        client: this._client, // Expose the client so multiple components can use the same client
+        conversations: this._conversationsList,
+        directUsers: this._directUsers
+      } 
+    }));
   }
 
   // Takes in an item and returns the inner html for the conversation feed
@@ -187,7 +209,7 @@ export class CircuitConversationsList extends HTMLElement {
     node.className = 'circuit-conversation';
     node.id = conversation.convId;
     node.value = conversation.convId;
-    let topic = conversation.topic || conversation.topicPlaceholder;
+    let topic = !!conversation.isSupport ? 'Support' : conversation.topic || conversation.topicPlaceholder;
     if (conversation.type === Circuit.Enums.ConversationType.DIRECT) {
       const directUserId = conversation.participants.find(p => p !== this._client.loggedOnUser.userId);
       topic = this._directUsers[directUserId].displayName;
@@ -196,15 +218,15 @@ export class CircuitConversationsList extends HTMLElement {
     return node;
   }
 
-  _loadConversations() {
-    this._resetValues();
-    this._getConversations();
-  }
-
   // Reset values if conversation changes
   _resetValues() {
     this._conversationsList = null;
     this._directUsers = null;
+  }
+
+  fetchConversations() {
+    this._resetValues();
+    this._getConversations();
   }
 
   // Lifecycle hooks
@@ -214,7 +236,7 @@ export class CircuitConversationsList extends HTMLElement {
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._numberOfConversations = !!this.getAttribute('numberOfConversations') && Number(this.getAttribute('numberOfConversations'));
-    this._fetchConversations = this._loadConversations;
+    this.fetchConversations = this.fetchConversations; // Expose fetchConversations externally
   }
 }
 
