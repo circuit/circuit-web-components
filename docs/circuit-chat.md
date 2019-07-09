@@ -3,7 +3,11 @@
 ## Usage
 
 ```html
+<<<<<<< HEAD
 // Render text messages of conversation with an input field to post messages.
+=======
+// Circuit Conversation. Renders the conversation feed of a given conversation Id.
+>>>>>>> d2a57de75175d58f2d7858e425ce7481bfaa9311
 <circuit-chat
   domain="circuitsandbox.net"
   clientId="f06c51a30f0d4eb6acc05829c3e86266"
@@ -19,15 +23,25 @@
 
 | Name        | Required | Default            | Description
 | ---         | ---      | ---                | ---
+<<<<<<< HEAD
 | client   | no<sup>[*](#myfootnote1)</sup>     |                    | Initialized on client instance
 | clientId    | no<sup>[*](#myfootnote1)</sup>      |                    | client_id of your app <sup>[2](#myfootnote1)</sup>
+=======
+| client   | no<sup>[*](#myfootnote1)</sup>     |                    | initialized on client instance
+| clientId    | no<sup>[*](#myfootnote1)</sup>      |                    | client_id of your app <sup>[2](#myfootnote1)</sup>
+| target      | yes      |                    | Email of Circuit user to call
+>>>>>>> d2a57de75175d58f2d7858e425ce7481bfaa9311
 | domain      | no       | circuitsandbox.<span></span>net | Url of Circuit system
 | inprogress  | no       | omitted (false)    | Attribute set by the web component to allow easy CSS attribute styling
 | connected   | no       | omitted (false)    | Attribute set by the web component to indicate if component if connected to the Circuit servers. Can be used to change the button style via CSS if connection is lost.
 | convId       | yes       |     | String attribute. The conversation Id of the conversation to be rendered.
 | sendOnEnter       | no       |   false  | Non-value attribute. When present messages will be sent to the conversations on an enter press.
 | showTitle       | no       |   false  | Non-value attribute. When present the title of the conversation will be displayed above.
+<<<<<<< HEAD
 | reverse       | no       |   false  | Non-value attribute. When present new items will appear at the top of the feed rather than the bottom.
+=======
+| showNewItemsTop       | no       |   false  | Non-value attribute. When present new items will appear at the top of the feed rather than the bottom.
+>>>>>>> d2a57de75175d58f2d7858e425ce7481bfaa9311
 | initNumOfItems       | no       |   25  | Number attribute. Sets the inital number of items to retrieve.
 
 <a name="myfootnote1">*</a>: Either a client Id or a initialized client instance must be passed.
@@ -41,20 +55,31 @@
 | Name        |  Type            |  Read/Write      | Description
 | ---         |  ---             |  ---             | ---
 | client        | [Client](https://circuitsandbox.net/sdk/classes/Client.html) | read | Circuit Client object as defined in the Circuit JS SDK.
+<<<<<<< HEAD
 | conversation        | [Conversation](https://circuitsandbox.net/sdk/classes/Conversation.html) | read | Object containing the conversation.
 | feed        | [Item[]](https://circuitsandbox.net/sdk/classes/Item.html) | read | Array of Items from the conversation.
 | users        | [User[]](https://circuitsandbox.net/sdk/classes/User.html) | read | Array of User objects from the conversation feed.
+=======
+>>>>>>> d2a57de75175d58f2d7858e425ce7481bfaa9311
 
 
 ### Events
 
 | Name        |  Arguments          | Description
 | ---         |  ---                | ---
+<<<<<<< HEAD
 | loaded  |  [Client](https://circuitsandbox.net/sdk/classes/Client.html)                 | Raised when the component has retrieved the conversation feed.
 | initialized  |  ---                 | Raised when Circuit.Client is initialized.
 | itemAdded  |  [Item](https://circuitsandbox.net/sdk/classes/Item.html)                | Raised when a new item in the conversation is added.
 | itemUpdated  |  [Item](https://circuitsandbox.net/sdk/classes/Item.html)                | Raised when a new item in the conversation feed is updated.
 | conversationUpdated  |  [Conversation](https://circuitsandbox.net/sdk/classes/Conversation.html)                | Raised when the conversation is updated.
+=======
+| loaded  |  ---                | Raised when the component has retrieved the conversation feed.
+| initialized  |  [Client](https://circuitsandbox.net/sdk/classes/Client.html)                   | Raised when Circuit.Client is initialized.
+| itemAdded  |  [Client](https://circuitsandbox.net/sdk/classes/Item.html)                | Raised when a new item in the conversation is added.
+| itemUpdated  |  [Client](https://circuitsandbox.net/sdk/classes/Item.html)                | Raised when a new item in the conversation feed is updated.
+| conversationUpdated  |  [Client](https://circuitsandbox.net/sdk/classes/Conversation.html)                | Raised when the conversation is updated.
+>>>>>>> d2a57de75175d58f2d7858e425ce7481bfaa9311
 
 ### Exposed Methods
 | Name        |  parameters          | Description
