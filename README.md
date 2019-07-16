@@ -31,16 +31,34 @@ Renders a button to start a Circuit call, either as guest (via pool of authentic
 
 
 ### [circuit-call-stage](docs/circuit-call-stage.md)
-Renders local and remote video streams of a call. `call` is passed as property to the web component. `overlay` attribute can be used to define the position on the local video, or to hide it.
+Renders local and remote video streams of a call. `convId` is passed as property to the web component to determine which conversation is rendered.
+
+
+### [circuit-conversations-list](docs/circuit-conversations-list.md)
+Renders a list of the most recent circuit conversations. 
+
+
+### [circuit-chat](docs/circuit-chat.md)
+Renders a circuit conversation feed and allows the user to participate in the chat. `call` is passed as property to the web component. `overlay` attribute can be used to define the position on the local video, or to hide it.
+
+
+### [circuit-conversations-list](docs/circuit-conversations-list.md)
+Renders a list of the most recent circuit conversations. `convId` is passed as property to the web component to determine which conversation is rendered.
+
+
+### [circuit-chat](docs/circuit-chat.md)
+Renders a circuit conversation feed and allows the user to participate in the chat.
 
 ## Usage and Documentation
 See [docs/README.md](docs/README.md)
 
 ## Live examples
 * [Audio call](https://raw.githack.com/circuit/circuit-web-components/master/examples/audioCall.html) (circuit-call-button)
+* [Circuit Chat](https://raw.githack.com/circuit/circuit-web-components/master/examples/chat.html) (circuit-conversations-list and circuit-chat)
 * [Video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/videoCall.html) (circuit-call-button and circuit-call-stage)
 * [Guest video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/guestCall.html) (circuit-call-button and circuit-call-stage)
 * [Vue.js app](https://raw.githack.com/circuit/circuit-web-components/master/examples/vue.html) (circuit-call-button)
+* [Circuit Chat](https://raw.githack.com/circuit/circuit-web-components/master/examples/chat.html) (circuit-conversations-list and circuit-chat)
 
 
 

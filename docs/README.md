@@ -10,6 +10,8 @@ The components use the [Circuit JS SDK](https://github.com/circuit/circuit-sdk).
 
 * [circuit-call-button](circuit-call-button.md)
 * [circuit-call-stage](circuit-call-stage.md)
+* [circuit-conversations-list](circuit-conversations-list.md)
+* [circuit-chat](circuit-chat.md)
 
 
 ## Usage
