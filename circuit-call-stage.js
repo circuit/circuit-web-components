@@ -25,8 +25,8 @@ template.innerHTML = `
 </style>
 
 <div id="container">
-  <video id="remoteVideo" muted autoplay playsinline></video>
-  <video id="localVideo" muted autoplay playsinline></video>
+  <video id="remoteVideo" autoplay playsinline></video>
+  <video id="localVideo" autoplay playsinline></video>
 </div>
 `;
 
