@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="module" src="../circuit-video-display.js" defer></script>
+
+  <style>
+    /* Global page styles which are inherited by element */
+    body {
+      font-family: sans-serif;
+      font-size: 13px;
+    }
+
+    circuit-video-display {
+      margin-top: 20px;
+      width: 400px;
+      height: 300px;
+      display: block;
+    }
+
+    circuit-video-display:not([streaming]) {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>GetUserMedia</h2>
+  <button>Toggle getUserMedia</button>
+  <circuit-video-display></circuit-video-display>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnEl = document.querySelector('button');
+      const videoEl = document.querySelector('circuit-video-display');
+      let stream = null;
+
+      btnEl.addEventListener('click', async e => {
+        if (videoEl.stream) {
+          videoEl.stop();
+          return;
+        }
+
+        try {
+          videoEl.stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: true
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
