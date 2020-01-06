@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://dl.dropboxusercontent.com/s/1puij1dhgqxe7u6/circuit.js?dl=0"></script>
+
+	<style>
+		body {
+			font-family: sans-serif;
+			font-size: 13px;
+		}
+
+		/* Show call stage when stage is active (i.e. video is streaming) */
+		#container[streaming] {
+			margin-top: 20px;
+			width: 400px;
+			height: 300px;
+			display: block;
+			position: relative;
+			border: solid 1px;
+		}
+		#container {
+			display: none;
+		}
+
+		button[inprogress] {
+			background:#c22026;
+		}
+
+		#remoteVideo {
+			height: inherit;
+			width: inherit;
+			object-fit: cover;
+		}
+
+		#localVideo {
+			position: absolute;
+		}
+
+		input {
+			width: 200px;
+		}
+	</style>
+</head>
+
+<body>
+	<h2>Guest video call</h2>
+	<p>Join a conference as guest. Guest user does not need to logon as it uses a conference token provided by meeting organizer.</p>
+	<div>
+		Enter the conference token.<br>
+		<input value="daabaf9a40763a850abba27b3332fb46">
+	</div>
+
+	<button id="btn">Join</button>
+	<div id="container">
+		<video id="localVideo" autoplay playsinline></video>
+		<video id="remoteVideo" autoplay playsinline></video>
+	</div>
+	<audio id="ringback" autoplay></audio>
+	<audio id="audio" autoplay></audio>
+
+	<script>
+		let btnEl;
+		let localVideoEl;
+		let remoteVideoEl;
+		let audioEl;
+		let ringbackEl;
+		let targetEl;
+		let containerEl;
+
+		let overlay = 'bottom-right';
+
+		let stream = null;
+		let client = null;
+		let connected = 'Disconnected';
+		let call = null;
+		let waiting = false;
+
+		const DEFAULT_TEXT = 'Join';
+		const WAITING_TEXT = 'Waiting...';
+		const CALLING_TEXT = 'Calling...';
+		const HANGUP_TEXT = 'Hangup';
+
+		const DOMAIN = 'adfs01.circuitsandbox.net';
+		const CLIENT_ID = 'ba59c7925eef43799e56a8d4553cde65';
+
+		async function waitingRoom(token) {
+			try {
+				btnEl.textContent = WAITING_TEXT;
+				waiting = true;
+				await client.monitorSession(token);
+			} finally {
+				waiting = false;
+			}
+		}
+
+		async function joinConference() {
+			try {
+				const token = targetEl.value;
+				await waitingRoom(token);
+
+				btnEl.textContent = CALLING_TEXT;
+				btnEl.setAttribute('disabled', '');
+				call = await client.joinConference({
+					token,
+					firstName: 'John',
+					lastName: 'Snow'
+				}, {audio: true, video: true});
+				console.info('Joined call = ', call)
+				render();
+			} catch (err) {
+				console.error('Error joining conference. ', err);
+				btnEl.removeAttribute('disabled');
+				btnEl.textContent = DEFAULT_TEXT;
+			}
+		}
+
+		async function hangup() {
+			await client.leaveConference();
+		}
+
+		async function init() {
+			Circuit.logger.setLevel(1);
+
+			client = Circuit.GuestClient({
+				client_id: CLIENT_ID,
+				domain: DOMAIN
+			});
+
+			client.addEventListener('connectionStateChanged', e => {
+				console.info('Received connectionStateChanged with state = ', e.state)
+				connected = e.state === 'Connected';
+			});
+
+			client.addEventListener('callStatus', e => {
+				console.info('Received callStatus with call state = ', e.call.state)
+
+				if (e.call.state === 'Initiated') {
+					btnEl.removeAttribute('inprogress');
+					btnEl.textContent = CALLING_TEXT;
+				} else {
+					btnEl.setAttribute('inprogress', '');
+					btnEl.textContent = HANGUP_TEXT;
+					btnEl.removeAttribute('disabled', '');
+				}
+
+				render();
+			});
+
+			client.addEventListener('callEnded', e => {
+				console.info('Received callEnded event')
+				call = null;
+				btnEl.removeAttribute('inprogress');
+				btnEl.textContent = DEFAULT_TEXT;
+				render();
+			});
+		}
+
+		function setElementSrc(elem, value) {
+			if (typeof value === 'string') {
+				elem.src = value;
+			} else {
+				elem.srcObject = value;
+			}
+		}
+
+		function render() {
+			try {
+				// Set remote audio stream
+				if (call) {
+					audioEl.srcObject = call.remoteAudioStream;
+					setElementSrc(localVideoEl, call.localStreams.video || call.localStreams.desktop);
+				} else {
+					audioEl.srcObject = null;
+					setElementSrc(localVideoEl, null);
+				}
+
+				if (!call || !call.remoteVideoStreams.length) {
+					setElementSrc(remoteVideoEl, null);
+				} else {
+					setElementSrc(remoteVideoEl, call.remoteVideoStreams[0].stream);
+				}
+
+				// Reflect 'streaming' attribute
+				if (remoteVideoEl.srcObject || localVideoEl.srcObject) {
+					containerEl.setAttribute('streaming', true);
+				} else {
+					containerEl.removeAttribute('streaming');
+				}
+
+				// Hide local video
+				if (overlay === 'hide') {
+					localVideoEl.srcObject = null;
+					return;
+				}
+
+				// Show local video in full
+				if (overlay === 'full') {
+					localVideoEl.style.top = 'unset';
+					localVideoEl.style.bottom = 'unset';
+					localVideoEl.style.left = 'unset';
+					localVideoEl.style.right = 'unset';
+					localVideoEl.style.width = 'inherit';
+					return;
+				}
+
+				// Show local video as positioned overlay
+				localVideoEl.style.width = Math.floor(containerEl.offsetWidth / 4) + 'px';
+				localVideoEl.style.top = overlay.startsWith('top-') ? '5px' : 'unset';
+				localVideoEl.style.bottom = overlay.startsWith('bottom-') ? '5px' : 'unset';
+				localVideoEl.style.left = overlay.endsWith('-left') ? '5px' : 'unset';
+				localVideoEl.style.right = overlay.endsWith('-right') ? '5px' : 'unset';
+			} catch (err) {
+				console.error('Error rendering video streams', err);
+				throw new Error('Error rendering video streams');
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', async () => {
+			btnEl = document.querySelector('button');
+			localVideoEl = document.querySelector('#localVideo');
+			remoteVideoEl = document.querySelector('#remoteVideo');
+			audioEl = document.querySelector('#audio');
+			targetEl = document.querySelector('input');
+			containerEl = document.querySelector('#container');
+
+			await init();
+
+			btnEl.addEventListener('click', async e => {
+				if (waiting) {
+					client.cancelMonitor();
+				} else if (!call) {
+					joinConference();
+				} else {
+					hangup();
+				}
+			});
+		});
+
+
+	</script>
+
+</body>
+
+</html>
