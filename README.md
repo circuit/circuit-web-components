@@ -46,9 +46,6 @@ Renders a circuit conversation feed and allows the user to participate in the ch
 Renders a list of the most recent circuit conversations. `convId` is passed as property to the web component to determine which conversation is rendered.
 
 
-### [circuit-chat](docs/circuit-chat.md)
-Renders a circuit conversation feed and allows the user to participate in the chat.
-
 ## Usage and Documentation
 See [docs/README.md](docs/README.md)
 
