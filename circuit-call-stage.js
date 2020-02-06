@@ -36,6 +36,10 @@ export class CircuitCallStage extends HTMLElement {
     return ['overlay'];
   }
 
+  set test(v) {
+    console.log('roger', v)
+  }
+
   get call() {
     return this._call;
   }
@@ -76,16 +80,25 @@ export class CircuitCallStage extends HTMLElement {
 
   _render() {
     try {
-      if (!this._call || !this._call.remoteVideoStreams.length) {
-        this._remoteVideoEl.srcObject = null;
-      } else {
-        this._remoteVideoEl.srcObject = this._call.remoteVideoStreams[0].stream;
-      }
-
-      if (!this._call) {
+      if (!this._call || !this._call.localStreams) {
         this._localVideoEl.srcObject = null;
       } else {
         this._localVideoEl.srcObject = this._call.localStreams.video || this._call.localStreams.desktop;
+      }
+
+      // Only support single remote stream at this time
+      if (this._call) {
+        const remoteStreams = this._call && this._call.participants
+          .map(p => p.streams && (p.streams.video || p.streams.desktop))
+          .filter(s => !!s);
+
+        if (remoteStreams && remoteStreams.length) {
+          this._remoteVideoEl.srcObject = remoteStreams[0];
+        } else {
+          this._remoteVideoEl.srcObject = null;
+        }
+      } else {
+        this._remoteVideoEl.srcObject = null;
       }
 
       // Reflect 'streaming' attribute
