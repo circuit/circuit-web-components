@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<script src="https://dl.dropboxusercontent.com/s/1puij1dhgqxe7u6/circuit.js?dl=0"></script>
+	<script src="https://unpkg.com/circuit-sdk@beta/circuit.js"></script>
 
 	<style>
 		body {
@@ -48,7 +48,7 @@
 	<p>Join a conference as guest. Guest user does not need to logon as it uses a conference token provided by meeting organizer.</p>
 	<div>
 		Enter the conference token.<br>
-		<input value="daabaf9a40763a850abba27b3332fb46">
+		<input value="enter guest token">
 	</div>
 
 	<button id="btn">Join</button>
@@ -81,8 +81,8 @@
 		const CALLING_TEXT = 'Calling...';
 		const HANGUP_TEXT = 'Hangup';
 
-		const DOMAIN = 'adfs01.circuitsandbox.net';
-		const CLIENT_ID = 'ba59c7925eef43799e56a8d4553cde65';
+		const DOMAIN = 'circuitsandbox.net';
+		const CLIENT_ID = 'f76ea1b2789946c9b88b008c682c132a';
 
 		async function waitingRoom(token) {
 			try {
