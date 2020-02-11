@@ -1,7 +1,7 @@
 {
   "name": "@unify/circuit-web-components",
   "description": "Circuit web components",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Unify Inc.",
   "contributors": [
     "Roger Urscheler <roger.urscheler@atos.net>"
