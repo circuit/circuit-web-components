@@ -11,7 +11,7 @@ template.innerHTML = `
   border-radius: 5px;
   background:#88c541;
   color: white;
-  padding: 5px 10px;
+  padding: 2px 6px;
 }
 :host([inprogress]) {
   background:#c22026;
@@ -27,9 +27,12 @@ button {
   background: inherit;
   color: inherit;
   font-size: inherit;
+  font-weight: inherit;
   font-family: inherit;
   border: inherit;
   border-radius: inherit;
+  padding: inherit;
+  margin: inherit;
 }
 
 </style>
@@ -146,7 +149,6 @@ export class CircuitCallButton extends HTMLElement {
     this._client.addEventListener('callStatus', e => {
       this.call = e.call;
 
-      console.log('roger ' + this.call.state + '  ' + this.call.isRemote)
       // Update 'inprogress' attribute and button text
       if (e.call.state === 'Initiated') {
         this.removeAttribute('inprogress');
