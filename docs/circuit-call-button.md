@@ -38,7 +38,10 @@
 | Name        | Required | Default            | Description
 | ---         | ---      | ---                | ---
 | clientId    | yes      |                    | client_id of your app <sup>[1](#myfootnote1)</sup>
-| target      | yes      |                    | Email of Circuit user to call
+| target      | *yes      |                   | Email of Circuit user to call. Not required for guest calls.
+| guestToken  | *yes      |                   | Token part of Guest url. Only required for guest calls.
+| firstName   | *yes      |                   | Firstname of guest user. Only required for guest calls.
+| lastName    | *yes      |                   | Lasttname of guest user. Only required for guest calls.
 | domain      | no       | circuitsandbox.<span></span>net | Url of Circuit system
 | poolUrl     | no       |                    | Url of endpoint returning tokens of a pool of users. If not defined user will be asked to login via OAuth. If defined, the endpoint must return a json object with a token attribute. <sup>[2](#myfootnote2)</sup>
 | video       | no       | omitted (false)    | Boolean attribute. If present, local video is streamed.
@@ -68,6 +71,7 @@
 | ---         |  ---                | ---
 | callchange  |  [Call](https://circuitsandbox.net/sdk/classes/Call.html)                   | Raised on any call related change such as a call state change, remote steam added/removed. `call` argument is `null` when call ended.
 | initialized  |  [Client](https://circuitsandbox.net/sdk/classes/Client.html)                   | Raised when Circuit.Client is initialized.
+| waitingchange  |                     | Raised when call started while waiting in guest waiting room
 
 ### Styling (CSS)
 
