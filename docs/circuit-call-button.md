@@ -7,7 +7,7 @@
 <circuit-call-button
   video
   domain="circuitsandbox.net"
-  clientId="..."
+  clientId="<client_id>"
   target="circuitsdk01@gmail.com"
   callingText="Calling Helpdesk..."
   ringbackTone="https://upload.wikimedia.org/wikipedia/commons/e/ea/UK_ringback_tone.ogg"
@@ -15,19 +15,29 @@
 ```
 
 ```html
-// Audio call. Specifies only required attribute. Defaults to circuitsandbox.net system.
+// Audio call. Only required attributes defined. Defaults to an audio call on circuitsandbox.net system with default calling text, hangup text and ringback tone.
 <circuit-call-button
-  clientId="..."
+  clientId="<client_id>"
   target="support@mycompany.com">Call Support</circuit-call-button>
 ```
 
 ```html
-// Guest video call on EU production system. No user authentication required since a guest token is provided.
+// Video conference on EU production system. Start conference, or join if conference has already started.
 <circuit-call-button
   video
+  clientId="<client_id>"
   domain="eu.yourcircuit.com"
-  clientId="..."
-  guestToken="..."
+  target="<conv_id>"
+  callingText="Starting..."
+  joinText="Join conference">Start conference</circuit-call-button>
+```
+
+```html
+// Guest video conference. No user authentication required since a guest token is provided.
+<circuit-call-button
+  video
+  clientId="<client_id>"
+  guestToken="<guest token>"
   firstName="John"
   lastName="Doe">Join All-hands call</circuit-call-button>
 ```
@@ -39,7 +49,7 @@
 | Name        | Required | Default            | Description
 | ---         | ---      | ---                | ---
 | clientId    | yes      |                    | client_id of your app <sup>[1](#myfootnote1)</sup>
-| target      | *yes      |                   | Email of Circuit user to call. Not required for guest calls.
+| target      | *yes      |                   | Email of Circuit user to call, or conversation ID for conferences. Not required for guest calls.
 | guestToken  | *yes      |                   | Token part of Guest url. Only required for guest calls.
 | firstName   | *yes      |                   | Firstname of guest user. Only required for guest calls.
 | lastName    | *yes      |                   | Lasttname of guest user. Only required for guest calls.
@@ -47,6 +57,7 @@
 | poolUrl     | no       |                    | Url of endpoint returning tokens of a pool of users. If not defined user will be asked to login via OAuth. If defined, the endpoint must return a json object with a token attribute. <sup>[2](#myfootnote2)</sup>
 | video       | no       | omitted (false)    | Boolean attribute. If present, local video is streamed.
 | callingText | no       | "Calling..."       | Text shown on button during the alerting phase
+| joinText | no       | "Join"       | Text shown on button when a conference has started that is not joined yet. This is only applicable if user has already logged in.
 | hangupText  | no       | "Hangup"           | Text shown on button while in "Delievered" state or established call
 | ringbackTone| no       | US ringback tone   | Ringback tone played to user when call is delivered, prior to called party answering
 | inprogress  | no       | omitted (false)    | Attribute set by the web component to allow easy CSS attribute styling

@@ -82,7 +82,7 @@
             subtitle: 'Demonstrates use of <b>circuit-call-button</b> for a direct audio call. Properties such as <b>target</b> may be set in HTML or using JavaScript.',
             code: [`<circuit-call-button
   domain="circuitsandbox.net"
-  clientId="..."
+  clientId="<client_id>"
   target="help@xyz.com"
   callingText="Calling Helpdesk..."
   hangupText="End call">Call Helpdesk
@@ -101,7 +101,7 @@
             code: [`<circuit-call-button
   video
   domain="circuitsandbox.net"
-  clientId="..."
+  clientId="<client_id>"
   target="hr@xyz.com">Call HR
 </circuit-call-button>
 <circuit-call-stage></circuit-call-stage>`,
@@ -118,11 +118,33 @@
 
           {
             id: 3,
+            title: 'Video conference',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> to start of join a conference, and <b>circuit-call-stage</b> to show the video.',
+            code: [`<circuit-call-button
+  video
+  domain="circuitsandbox.net"
+  clientId="<client_id>"
+  target="<conv_id>"
+  callingText="Starting..."
+  joinText="Join conference">Start conference</circuit-call-button>
+<circuit-call-stage></circuit-call-stage>`,
+`const btnEl = document.querySelector('circuit-call-button')
+const stageEl = document.querySelector('circuit-call-stage')
+btnEl.addEventListener('callchange', e => stageEl.call = e.detail)`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/videoConference.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/videoConference.html'
+              },
+            componentsUsed: ['circuit-call-button', 'circuit-call-stage']
+          },
+
+          {
+            id: 4,
             title: 'Guest video conference',
             subtitle: 'Demonstrates use of <b>circuit-call-button</b> to join a conference as guest, and <b>circuit-call-stage</b> to show the video. Guest user does not need to logon as it uses a conference token provided by the meeting organizer.',
             code: [`<circuit-call-button
   video
-  clientId="..."
+  clientId="<client_id>"
   token="..."
   callingText="Waiting..."
   hangupText="Leave conference">Join conference as guest
@@ -142,13 +164,13 @@ btnEl.addEventListener('waitingchange', e =>
           },
 
           {
-            id: 4,
+            id: 5,
             title: 'Guest video call (with pool user)',
             subtitle: 'Demonstrates use of <b>circuit-call-button</b> and <b>circuit-call-stage</b> for a direct video call. User does not need a Circuit account. This app requires a server side "pool app" to dynamically fetch a temporary user account.',
             code: [`<circuit-call-button
   video
   domain="circuitsandbox.net"
-  clientId="..."
+  clientId="<client_id>"
   target="hr@xyz.com">Call HR
 </circuit-call-button>
 <circuit-call-stage></circuit-call-stage>`,
@@ -164,14 +186,14 @@ btnEl.addEventListener('waitingchange', e =>
           },
 
           {
-            id: 5,
+            id: 6,
             title: 'Vue.js app',
             subtitle: 'Demonstrates use of <b>circuit-call-button</b> in a vue.js app.',
             code: [`<div id="app">
   <input v-model.trim="target" placeholder="Enter email">
   <circuit-call-button
     :disabled="!target"
-    :clientId="..."
+    :clientId="<client_id>"
     :target="target"
     @callchange="call = $event.detail">Call Helpdesk
   </circuit-call-button>
@@ -196,7 +218,7 @@ btnEl.addEventListener('waitingchange', e =>
             title: 'Chat app',
             subtitle: 'Demonstrates use of <b>circuit-conversations-list</b> to show a list of the user\'s conversations. Selecting a conversation shows its messages in a <b>circuit-chat</b> component. New messages can also be sent using <b>circuit-chat</b>.',
             code: [`<button onclick="load()">Load conversations</button>
-<circuit-conversations-list clientId="..." numberOfConversations="10">
+<circuit-conversations-list clientId="<client_id>" numberOfConversations="10">
 </circuit-conversations-list>
 <circuit-chat initNumOfItems="40" sendOnEnter showTitle>
 </circuit-chat>`,

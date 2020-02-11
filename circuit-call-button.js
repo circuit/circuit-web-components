@@ -58,6 +58,7 @@ export class CircuitCallButton extends HTMLElement {
   }
 
   set target(value) {
+    this._direct = this._validateEmail(value);
     this._target = value;
     // Reflect to attribute
     this.setAttribute('target', value);
@@ -103,6 +104,8 @@ export class CircuitCallButton extends HTMLElement {
 
   constructor() {
     super();
+    this.EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     this._client = null;
 
     this.root = this.attachShadow({ mode: 'open' });
@@ -112,6 +115,10 @@ export class CircuitCallButton extends HTMLElement {
     this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
     this._btn.textContent = this._defaultText;
     this._btn.addEventListener('click', this._click.bind(this));
+  }
+
+  _validateTarget() {
+    this._direct = this.EMAIL_REGEX.test(String(this._target).toLowerCase());
   }
 
   // Delay Circuit initialization to speed up page load. This way the SDK
@@ -139,8 +146,18 @@ export class CircuitCallButton extends HTMLElement {
     this._client.addEventListener('callStatus', e => {
       this.call = e.call;
 
+      console.log('roger ' + this.call.state + '  ' + this.call.isRemote)
       // Update 'inprogress' attribute and button text
       if (e.call.state === 'Initiated') {
+        this.removeAttribute('inprogress');
+        this._btn.textContent = this._callingText;
+      } else if (e.call.state === 'Started') {
+        // Another user has started the conference
+        this._btn.textContent = this._joinText;
+        this.removeAttribute('inprogress'); // remote call is in progress, but not the local call 
+      } else if (e.call.state === 'ActiveRemote') {
+        // User has joined the conference on another device
+        // TODO: Offer pulling the call
         this.removeAttribute('inprogress');
         this._btn.textContent = this._callingText;
       } else {
@@ -244,16 +261,18 @@ export class CircuitCallButton extends HTMLElement {
     }
 
     if (this.call) {
-      if (this._guestToken) {
-        await this._client.leaveConference();
-      } else {
+      if (this._direct) {
         await this._hangup();
+      } else {
+        await this._client.leaveConference(this.call.callId);
       }
     } else {
-      if (this._guestToken) {
+      if (this.direct) {
+        await this._makeCall();
+      } else if (this._guestToken) {
         await this._joinConference();
       } else {
-        await this._makeCall();
+        await this._startConference();
       }
     }
   }
@@ -296,6 +315,27 @@ export class CircuitCallButton extends HTMLElement {
     }
   }
 
+  async _startConference() {
+    // For better user feedback change call to inprogress before call
+    // state is 'Initiated'
+    const origText = this._btn.textContent;
+    this._btn.textContent = this._callingText;
+    this.setAttribute('disabled', '');
+    try {
+      await this._connect();
+      const startedCalls = await this._client.getStartedCalls();
+      const remoteCall = startedCalls && startedCalls.find(c => c.convId === this._target);
+      if (remoteCall) {
+        await this._client.joinConference(remoteCall.callId, { audio: true, video: this._sendVideo });
+      } else {
+        this.call = await this._client.startConference(this._target, { audio: true, video: this._sendVideo });
+      }
+    } catch (err) {
+      this.removeAttribute('disabled');
+      this._btn.textContent = origText;
+    }
+  }
+
   async _makeCall() {
     // For better user feedback change call to inprogress before call
     // state is 'Initiated'
@@ -321,12 +361,14 @@ export class CircuitCallButton extends HTMLElement {
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._poolUrl = this.getAttribute('poolUrl');
     this._target = this.getAttribute('target');
+    this._validateTarget();
     this._guestToken = this.getAttribute('guestToken');
     this._waiting = false;
     this._firstName = this.getAttribute('firstName');
     this._lastName = this.getAttribute('lastName');
     this._sendVideo = this.getAttribute('video') !== null;
     this._callingText = this.getAttribute('callingText') || 'Calling...';
+    this._joinText = this.getAttribute('joinText') || 'Join';
     this._hangupText = this.getAttribute('hangupText') || 'Hangup';
     this._ringbackTone = this.getAttribute('ringbackTone') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
   }
@@ -345,6 +387,7 @@ export class CircuitCallButton extends HTMLElement {
 
       case 'target':
       this._target = newValue;
+      this._validateTarget();
       break;
 
       case 'guestToken':

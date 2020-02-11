@@ -68,10 +68,6 @@
           e.detail && e.detail.isEstablished ? btnToggle.removeAttribute('hidden') : btnToggle.setAttribute('hidden', '');
         });
 
-document.querySelector('circuit-call-button').addEventListener('callchange', e => {
-  document.querySelector('circuit-call-stage').call = e.detail;
-});
-
         for (let radio of document.querySelectorAll('input[name="overlay"]')) {
           radio.addEventListener('change', e =>
             stageEl.setAttribute('overlay', e.target.value)
