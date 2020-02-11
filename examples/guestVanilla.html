@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<script src="https://unpkg.com/circuit-sdk@beta/circuit.js"></script>
+	<script src="//unpkg.com/circuit-sdk@beta/circuit.min.js"></script>
 
 	<style>
 		body {
@@ -19,12 +19,13 @@
 			position: relative;
 			border: solid 1px;
 		}
+
 		#container {
 			display: none;
 		}
 
 		button[inprogress] {
-			background:#c22026;
+			background: #c22026;
 		}
 
 		#remoteVideo {
@@ -45,7 +46,8 @@
 
 <body>
 	<h2>Guest video call</h2>
-	<p>Join a conference as guest. Guest user does not need to logon as it uses a conference token provided by meeting organizer.</p>
+	<p>Join a conference as guest. Guest user does not need to logon as it uses a conference token provided by meeting
+		organizer.</p>
 	<div>
 		Enter the conference token.<br>
 		<input value="enter guest token">
@@ -58,6 +60,14 @@
 	</div>
 	<audio id="ringback" autoplay></audio>
 	<audio id="audio" autoplay></audio>
+
+	<p>
+		<a target="_blank"
+			href="https://github.com/circuit/circuit-web-components/blob/master/examples/guest.html">source</a> |
+		<a target="_blank" href="https://github.com/circuit/circuit-web-components/tree/master/docs">documentation</a> |
+		<a target="_blank" href="https://github.com/circuit/circuit-web-components">github</a> |
+		<a target="_blank" href="https://www.npmjs.com/package/@unify/circuit-web-components">npm</a> |
+	</p>
 
 	<script>
 		let btnEl;
@@ -105,7 +115,7 @@
 					token,
 					firstName: 'John',
 					lastName: 'Snow'
-				}, {audio: true, video: true});
+				}, { audio: true, video: true });
 				console.info('Joined call = ', call)
 				render();
 			} catch (err) {

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="//unpkg.com/circuit-sdk@beta/circuit.min.js"></script>
+
+	<style>
+		body {
+			font-family: sans-serif;
+			font-size: 13px;
+		}
+
+		/* Show call stage when stage is active (i.e. video is streaming) */
+		#container[streaming] {
+			margin-top: 20px;
+			width: 400px;
+			height: 300px;
+			display: block;
+			position: relative;
+			border: solid 1px;
+		}
+		#container {
+			display: none;
+		}
+
+		button[inprogress] {
+			background:#c22026;
+		}
+
+		#remoteVideo {
+			height: inherit;
+			width: inherit;
+			object-fit: cover;
+		}
+
+		#localVideo {
+			position: absolute;
+		}
+
+		input {
+			width: 200px;
+		}
+	</style>
+</head>
+
+<body>
+	<h2>Guest video call</h2>
+	<p>Start a video call with a Circuit user specified by the <code>target</code> attribute. Guest user does not need to
+		logon as its using a token provided by the <code>poolUrl</code> endpoint.</p>
+	<div>
+		Since there is no actual helpdesk, enter a Circuit email acting as receiving side.<br>
+		<input value="circuitsdk01@gmail.com">
+	</div>
+
+	<button id="btn">Call</button>
+	<div id="container">
+		<video id="localVideo" autoplay playsinline></video>
+		<video id="remoteVideo" autoplay playsinline></video>
+	</div>
+	<audio id="ringback" autoplay></audio>
+	<audio id="audio" autoplay></audio>
+
+	<script>
+		let btnEl;
+		let localVideoEl;
+		let remoteVideoEl;
+		let audioEl;
+		let ringbackEl;
+		let targetEl;
+		let containerEl;
+
+		let overlay = 'bottom-right';
+
+		let stream = null;
+		let client = null;
+		let connected = 'Disconnected';
+		let call = null;
+		const DEFAULT_TEXT = 'Call';
+		const CALLING_TEXT = 'Calling...';
+		const HANGUP_TEXT = 'Hangup';
+		const POOL_URL = 'https://guest-pool-tokens.circuit-apps.com/token';
+		const DOMAIN = 'circuitsandbox.net';
+		const CLIENT_ID = 'f06c51a30f0d4eb6acc05829c3e86266';
+		const RINGBACK_TONE = 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
+
+		async function getCredentials() {
+			let res = await fetch(`${POOL_URL}?clientId=${CLIENT_ID}&domain=${DOMAIN}`);
+			res = await res.json();
+			if (!res || !res.token) {
+				throw Error('No pool users found');
+			}
+			const cred = atob(res.token).split(':');
+			client.setOauthConfig({ client_id: cred[2] });
+			return {
+				username: cred[0],
+				password: cred[1]
+			};
+		}
+
+		async function connect() {
+			if (!Circuit) {
+				throw Error('circuit-sdk is not loaded');
+			}
+			!client && init();
+
+			try {
+				if (client.connectionState === 'Connected') {
+					return;
+				} else if (client.connectionState === 'Disconnected') {
+					if (POOL_URL) {
+						const cred = await getCredentials();
+						await client.logon(cred);
+					} else {
+						await client.logon();
+					}
+				} else {
+					await waitForConnected(5000);
+				}
+			} catch (err) {
+				console.error('Error connecting to Circuit', err);
+				throw new Error('Error connecting to Circuit');
+			}
+		}
+
+		async function waitForConnected(timeoutms) {
+			return new Promise((resolve, reject) => {
+				const check = () => {
+					if (client.connectionState === 'Connected') {
+						resolve();
+					} else if ((timeoutms -= 100) < 0) {
+						reject('timed out');
+					} else {
+						setTimeout(check, 100);
+					}
+				}
+				setTimeout(check, 100);
+			});
+		}
+
+		async function makeCall() {
+			// For better user feedback change call to inprogress before call
+			// state is 'Initiated'
+			const origText = btnEl.textContent;
+			btnEl.textContent = CALLING_TEXT;
+			btnEl.setAttribute('disabled', '');
+			try {
+				await connect();
+				call = await client.makeCall(targetEl.value, { audio: true, video: true }, true);
+			} catch (err) {
+				btnEl.removeAttribute('disabled');
+				btnEl.textContent = origText;
+			}
+		}
+
+		async function hangup() {
+			await client.endCall(call.callId);
+		}
+
+		async function init() {
+			Circuit.logger.setLevel(1);
+
+			client = Circuit.Client({
+				domain: DOMAIN,
+				client_id: CLIENT_ID
+			});
+
+			client.addEventListener('connectionStateChanged', e => {
+				connected = e.state === 'Connected';
+			});
+
+			client.addEventListener('callStatus', e => {
+				call = e.call;
+
+				if (e.call.state === 'Initiated') {
+					btnEl.removeAttribute('inprogress');
+					btnEl.textContent = CALLING_TEXT;
+				} else {
+					btnEl.setAttribute('inprogress', '');
+					btnEl.textContent = HANGUP_TEXT;
+					btnEl.removeAttribute('disabled', '');
+				}
+
+				// Set/clear ringback tone
+				if (e.call.state === 'Delivered') {
+					ringbackEl.src = RINGBACK_TONE;
+				} else {
+					ringbackEl.removeAttribute('src');
+					ringbackEl.load();
+				}
+
+				// Set remote audio stream
+				audioEl.srcObject = e.call.remoteAudioStream;
+
+				render();
+			});
+
+			client.addEventListener('callEnded', e => {
+				call = null;
+				btnEl.removeAttribute('inprogress');
+				btnEl.textContent = DEFAULT_TEXT;
+
+				ringbackEl.removeAttribute('src');
+				ringbackEl.load();
+
+				render();
+			});
+		}
+
+		function render() {
+			try {
+				if (!call || !call.remoteVideoStreams.length) {
+					remoteVideoEl.srcObject = null;
+				} else {
+					remoteVideoEl.srcObject = call.remoteVideoStreams[0].stream;
+				}
+
+				if (!call) {
+					localVideoEl.srcObject = null;
+				} else {
+					localVideoEl.srcObject = call.localStreams.video || call.localStreams.desktop;
+				}
+
+				// Reflect 'streaming' attribute
+				if (remoteVideoEl.srcObject || localVideoEl.srcObject) {
+					containerEl.setAttribute('streaming', true);
+				} else {
+					containerEl.removeAttribute('streaming');
+				}
+
+				// Hide local video
+				if (overlay === 'hide') {
+					localVideoEl.srcObject = null;
+					return;
+				}
+
+				// Show local video in full
+				if (overlay === 'full') {
+					localVideoEl.style.top = 'unset';
+					localVideoEl.style.bottom = 'unset';
+					localVideoEl.style.left = 'unset';
+					localVideoEl.style.right = 'unset';
+					localVideoEl.style.width = 'inherit';
+					return;
+				}
+
+				// Show local video as positioned overlay
+				localVideoEl.style.width = Math.floor(containerEl.offsetWidth / 4) + 'px';
+				localVideoEl.style.top = overlay.startsWith('top-') ? '5px' : 'unset';
+				localVideoEl.style.bottom = overlay.startsWith('bottom-') ? '5px' : 'unset';
+				localVideoEl.style.left = overlay.endsWith('-left') ? '5px' : 'unset';
+				localVideoEl.style.right = overlay.endsWith('-right') ? '5px' : 'unset';
+			} catch (err) {
+				console.error('Error rendering video streams', err);
+				throw new Error('Error rendering video streams');
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', async () => {
+			btnEl = document.querySelector('button');
+			localVideoEl = document.querySelector('#localVideo');
+			remoteVideoEl = document.querySelector('#remoteVideo');
+			audioEl = document.querySelector('#audio');
+			ringbackEl = document.querySelector('#ringback');
+			targetEl = document.querySelector('input');
+			containerEl = document.querySelector('#container');
+
+			await init();
+
+			btnEl.addEventListener('click', async e => {
+				if (!call) {
+					makeCall();
+				} else {
+					hangup();
+				}
+			});
+		});
+
+
+	</script>
+
+</body>
+
+</html>

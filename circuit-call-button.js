@@ -40,9 +40,9 @@ button {
 `;
 
 export class CircuitCallButton extends HTMLElement {
-  // Attributes we care about getting values from.
+  // Attributes we care about getting change notifications for
   static get observedAttributes() {
-    return ['video', 'target'];
+    return ['video', 'target', 'guestToken'];
   }
 
   get connected() {
@@ -67,6 +67,36 @@ export class CircuitCallButton extends HTMLElement {
     return this._target;
   }
 
+  set guestToken(value) {
+    this._guestToken = value;
+    // Reflect to attribute
+    this.setAttribute('guestToken', value);
+  }
+
+  get guestToken() {
+    return this._guestToken;
+  }
+  
+  set firstName(value) {
+    this._firstName = value;
+    // Reflect to attribute
+    this.setAttribute('firstName', value);
+  }
+
+  get firstName() {
+    return this._firstName;
+  }
+
+  set lastName(value) {
+    this._lastName = value;
+    // Reflect to attribute
+    this.setAttribute('lastName', value);
+  }
+
+  get lastName() {
+    return this._lastName;
+  }
+
   get client() {
     return this._client;
   }
@@ -82,18 +112,25 @@ export class CircuitCallButton extends HTMLElement {
     this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
     this._btn.textContent = this._defaultText;
     this._btn.addEventListener('click', this._click.bind(this));
-
-    this.addEventListener('click', this._click);
   }
 
   // Delay Circuit initialization to speed up page load. This way the SDK
   // can be loaded with 'async'
   async _init() {
     Circuit.logger.setLevel(1);
-    this._client = Circuit.Client({
-      domain: this._domain,
-      client_id: this._clientId
-    });
+
+    if (this._guestToken) {
+      // Use the guest SDK instead
+      this._client = Circuit.GuestClient({
+        domain: this._domain,
+        client_id: this._clientId
+      });
+    } else {
+      this._client = Circuit.Client({
+        domain: this._domain,
+        client_id: this._clientId
+      });      
+    }
 
     this._client.addEventListener('connectionStateChanged', e => {
       this._connected = e.state === 'Connected';
@@ -174,7 +211,7 @@ export class CircuitCallButton extends HTMLElement {
         if (this._poolUrl) {
           const cred = await this._getCredentials();
           await this._client.logon(cred);
-        } else {
+        } else if (!this._guestToken) {
           await this._client.logon();
         }
       } else {
@@ -205,10 +242,57 @@ export class CircuitCallButton extends HTMLElement {
     if (this.getAttribute('disabled') !== null) {
       return;
     }
-    if (!this.call) {
-      this._makeCall();
+
+    if (this.call) {
+      if (this._guestToken) {
+        await this._client.leaveConference();
+      } else {
+        await this._hangup();
+      }
     } else {
-      this._hangup();
+      if (this._guestToken) {
+        await this._joinConference();
+      } else {
+        await this._makeCall();
+      }
+    }
+  }
+
+  async _waitingRoom(token) {
+    try {
+      this._waiting = true;
+      this.setAttribute('waiting', this._waiting);
+      this.dispatchEvent(new CustomEvent('waitingchange', { detail: this._waiting }));
+      await this._client.monitorSession(token);
+    } finally {
+      this._waiting = false;
+      this.setAttribute('waiting', this._waiting);
+      this.dispatchEvent(new CustomEvent('waitingchange', { detail: this._waiting }));
+    }
+  }
+
+  async _joinConference() {
+    if (this._waiting) {
+      this._client.cancelMonitor();
+      return;
+    }
+
+    // For better user feedback change call to inprogress before call
+    // state is 'Initiated'
+    const origText = this._btn.textContent;
+    this._btn.textContent = this._callingText;
+    this.setAttribute('disabled', '');
+    try {
+      await this._connect();
+      await this._waitingRoom(this._guestToken);
+      this.call = await this._client.joinConference({
+        token: this._guestToken,
+        firstName: this._firstName,
+        lastName: this._lastName
+      }, { audio: true, video: this._sendVideo });
+    } catch (err) {
+      this.removeAttribute('disabled');
+      this._btn.textContent = origText;
     }
   }
 
@@ -233,11 +317,14 @@ export class CircuitCallButton extends HTMLElement {
 
   // Lifecycle hooks
   connectedCallback() {
-    // Non-watched attributes
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._poolUrl = this.getAttribute('poolUrl');
     this._target = this.getAttribute('target');
+    this._guestToken = this.getAttribute('guestToken');
+    this._waiting = false;
+    this._firstName = this.getAttribute('firstName');
+    this._lastName = this.getAttribute('lastName');
     this._sendVideo = this.getAttribute('video') !== null;
     this._callingText = this.getAttribute('callingText') || 'Calling...';
     this._hangupText = this.getAttribute('hangupText') || 'Hangup';
@@ -258,6 +345,10 @@ export class CircuitCallButton extends HTMLElement {
 
       case 'target':
       this._target = newValue;
+      break;
+
+      case 'guestToken':
+      this._guestToken = newValue;
       break;
     }
   }

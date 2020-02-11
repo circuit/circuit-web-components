@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://dl.dropboxusercontent.com/s/1puij1dhgqxe7u6/circuit.js?dl=0" async></script>
+    <script src="//unpkg.com/circuit-sdk@beta/circuit.min.js" async></script>
     <script type="module" src="../circuit-call-button.js" defer></script>
     <script type="module" src="../circuit-call-stage.js" defer></script>
 
@@ -67,6 +67,10 @@
           stageEl.call = e.detail;
           e.detail && e.detail.isEstablished ? btnToggle.removeAttribute('hidden') : btnToggle.setAttribute('hidden', '');
         });
+
+document.querySelector('circuit-call-button').addEventListener('callchange', e => {
+  document.querySelector('circuit-call-stage').call = e.detail;
+});
 
         for (let radio of document.querySelectorAll('input[name="overlay"]')) {
           radio.addEventListener('change', e =>

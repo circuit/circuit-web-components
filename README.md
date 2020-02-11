@@ -51,9 +51,9 @@ See [docs/README.md](docs/README.md)
 
 ## Live examples
 * [Audio call](https://raw.githack.com/circuit/circuit-web-components/master/examples/audioCall.html) (circuit-call-button)
-* [Circuit Chat](https://raw.githack.com/circuit/circuit-web-components/master/examples/chat.html) (circuit-conversations-list and circuit-chat)
 * [Video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/videoCall.html) (circuit-call-button and circuit-call-stage)
-* [Guest video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/guestCall.html) (circuit-call-button and circuit-call-stage)
+* [Guest video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/guest.html) (circuit-call-button and circuit-call-stage)
+* [Guest pool direct video call](https://raw.githack.com/circuit/circuit-web-components/master/examples/guestPoolDirect.html) (circuit-call-button and circuit-call-stage)
 * [Vue.js app](https://raw.githack.com/circuit/circuit-web-components/master/examples/vue.html) (circuit-call-button)
 * [Circuit Chat](https://raw.githack.com/circuit/circuit-web-components/master/examples/chat.html) (circuit-conversations-list and circuit-chat)
 

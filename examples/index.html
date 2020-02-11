@@ -2,33 +2,234 @@
 <html>
 
 <head>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Material+Icons">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@2.2.11/dist/vuetify.min.css">
   <style>
     body {
       font-family: sans-serif;
       font-size: 14px;
+      margin: 10px;
+    }
+
+    code {
+      width: 100%;
+      font-weight: normal !important;
+    }
+
+    code:before {
+      content: '' !important;
     }
   </style>
 </head>
 
 <body>
-  <h2>Circuit Web Components Examples</h2>
+  <div id="app">
+    <v-app>
+      <h2 class="display-1">Circuit Web Component Examples</h2>
 
-  <p>
-    <a href="./audioCall.html">Audio Call</a>: Uses <code>circuit-call-button</code>
-  </p>
-  <p>
-    <a href="./videoCall.html">Video Call</a>: Uses <code>circuit-call-button</code> and <code>circuit-call-stage</code>
-  </p>
-  <p>
-    <a href="./guestCall.html">Guest Call</a>: Uses <code>circuit-call-button</code> and <code>circuit-call-stage</code>
-  </p>
-  <p>
-    <a href="./vue.html">Vue.js app</a>: Uses <code>circuit-call-button</code>
-  </p>
-  <p>
-    <a href="./chat.html">Chat app</a>: Uses <code>circuit-chat</code>
-  </p>
 
+      <v-container fluid>
+        <v-row>
+          <v-col cols="12">
+            <v-row class="">
+              <v-card class="mx-auto mb-3" max-width="600" outlined v-for="item in items" :key="id">
+                <v-list-item three-line>
+                  <v-list-item-content>
+                    <v-list-item-title class="headline mb-1">{{item.title}}</v-list-item-title>
+                    <v-list-item-subtitle class="mb-3 mt-2" style="line-clamp:4" v-html="item.subtitle">
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle>
+                      <code class="pa-2 prettyprint" v-for="code in item.code">{{code}}</code>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <v-card-actions class="py-0">
+                  <v-btn color="primary" text
+                  :href="item.buttons.live"
+                    target="_blank">Live
+                    demo</v-btn>
+                  <v-btn color="primary" text
+                  :href="item.buttons.source"
+                    target="_blank">Source</v-btn>
+                </v-card-actions>
+
+                <v-card-actions class="pt-0">
+                  <v-btn v-for="btn in item.componentsUsed" target="_blank" :href="getBtnUrl(btn)" text small style="text-transform:unset">{{btn}}</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-app>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.2.11/dist/vuetify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: {
+        items: [
+        {
+            id: 1,
+            title: 'Audio call',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> for a direct audio call. Properties such as <b>target</b> may be set in HTML or using JavaScript.',
+            code: [`<circuit-call-button
+  domain="circuitsandbox.net"
+  clientId="..."
+  target="help@xyz.com"
+  callingText="Calling Helpdesk..."
+  hangupText="End call">Call Helpdesk
+</circuit-call-button>`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/audioCall.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/audioCall.html'
+              },
+            componentsUsed: ['circuit-call-button']
+          },
+
+          {
+            id: 2,
+            title: 'Video call',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> for a direct video call with <b>circuit-call-stage</b> to show the local and remote video.',
+            code: [`<circuit-call-button
+  video
+  domain="circuitsandbox.net"
+  clientId="..."
+  target="hr@xyz.com">Call HR
+</circuit-call-button>
+<circuit-call-stage></circuit-call-stage>`,
+              `document.querySelector('circuit-call-button')
+  .addEventListener('callchange', e =>
+    document.querySelector('circuit-call-stage').call = e.detail
+  )`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/videoCall.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/videoCall.html'
+              },
+            componentsUsed: ['circuit-call-button', 'circuit-call-stage']
+          },
+
+          {
+            id: 3,
+            title: 'Guest video conference',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> to join a conference as guest, and <b>circuit-call-stage</b> to show the video. Guest user does not need to logon as it uses a conference token provided by the meeting organizer.',
+            code: [`<circuit-call-button
+  video
+  clientId="..."
+  token="..."
+  callingText="Waiting..."
+  hangupText="Leave conference">Join conference as guest
+</circuit-call-button>
+<circuit-call-stage></circuit-call-stage>`,
+`const btnEl = document.querySelector('circuit-call-button')
+const stageEl = document.querySelector('circuit-call-stage')
+btnEl.addEventListener('callchange', e => stageEl.call = e.detail)
+btnEl.addEventListener('waitingchange', e =>
+    btnEl.callingText = e.detail ? 'Waiting...' : 'Joining ...'
+)`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/guest.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/guest.html'
+              },
+            componentsUsed: ['circuit-call-button', 'circuit-call-stage']
+          },
+
+          {
+            id: 4,
+            title: 'Guest video call (with pool user)',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> and <b>circuit-call-stage</b> for a direct video call. User does not need a Circuit account. This app requires a server side "pool app" to dynamically fetch a temporary user account.',
+            code: [`<circuit-call-button
+  video
+  domain="circuitsandbox.net"
+  clientId="..."
+  target="hr@xyz.com">Call HR
+</circuit-call-button>
+<circuit-call-stage></circuit-call-stage>`,
+`document.querySelector('circuit-call-button')
+  .addEventListener('callchange', e =>
+    document.querySelector('circuit-call-stage').call = e.detail
+  )`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/guestCall.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/guestCall.html'
+              },
+            componentsUsed: ['circuit-call-button', 'circuit-call-stage', 'pool app']
+          },
+
+          {
+            id: 5,
+            title: 'Vue.js app',
+            subtitle: 'Demonstrates use of <b>circuit-call-button</b> in a vue.js app.',
+            code: [`<div id="app">
+  <input v-model.trim="target" placeholder="Enter email">
+  <circuit-call-button
+    :disabled="!target"
+    :clientId="..."
+    :target="target"
+    @callchange="call = $event.detail">Call Helpdesk
+  </circuit-call-button>
+</div>`,
+`new Vue({
+  el: '#app',
+  data: {
+    poolUrl: 'https://guest-pool-tokens.circuit-apps.com/token',
+    target: null,
+    call: null
+  }
+})`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/vue.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/vue.html'
+              },
+            componentsUsed: ['circuit-call-button', 'pool app']
+          },
+
+          {
+            id: 6,
+            title: 'Chat app',
+            subtitle: 'Demonstrates use of <b>circuit-conversations-list</b> to show a list of the user\'s conversations. Selecting a conversation shows its messages in a <b>circuit-chat</b> component. New messages can also be sent using <b>circuit-chat</b>.',
+            code: [`<button onclick="load()">Load conversations</button>
+<circuit-conversations-list clientId="..." numberOfConversations="10">
+</circuit-conversations-list>
+<circuit-chat initNumOfItems="40" sendOnEnter showTitle>
+</circuit-chat>`,
+`const list = document.querySelector('circuit-conversations-list')
+const chat = document.querySelector('circuit-chat')
+const load = () => list.fetchConversations()
+list.addEventListener('selected', e => {
+  chat.client = evt.detail.client
+  chat.convId = evt.detail.conversation.convId
+})
+chat.addEventListener('itemAdded', e => circuitChat.scrollTo('bottom'))`],
+            buttons: {
+                live: 'https://raw.githack.com/circuit/circuit-web-components/master/examples/guestCall.html',
+                source: 'https://github.com/circuit/circuit-web-components/blob/master/examples/guestCall.html'
+              },
+            componentsUsed: ['circuit-conversation-list', 'circuit-chat']
+          },
+        ],
+        urlMap: {
+          'circuit-call-button': 'https://github.com/circuit/circuit-web-components/blob/master/docs/circuit-call-button.md',
+          'circuit-call-stage': 'https://github.com/circuit/circuit-web-components/blob/master/docs/circuit-call-stage.md',
+          'circuit-conversation-list': 'https://github.com/circuit/circuit-web-components/blob/master/docs/circuit-conversation-list.md',
+          'circuit-chat': 'https://github.com/circuit/circuit-web-components/blob/master/docs/circuit-chat.md',
+          'pool app': 'https://github.com/circuit/guest-pool'
+        }
+      },
+      methods: {
+        getBtnUrl: function (name) {
+          return this.urlMap[name];
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>
