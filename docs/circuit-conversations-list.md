@@ -67,8 +67,3 @@ Here are some example CSS rules:
     --conversation-font-size: 13px;
   }
 ```
-
-
-## Referenced in examples
-
-* [Circuit Chat](../examples/chat.html)

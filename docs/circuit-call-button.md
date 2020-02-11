@@ -109,11 +109,3 @@ circuit-call-button[inprogress] {
   background: firebrick;
 }
 ```
-
-
-## Referenced in examples
-
-* [Audio Call](../examples/audioCall.html)
-* [Video Call](../examples/videoCall.html)
-* [Guest Call](../examples/guestCall.html)
-* [Vue.js App](../examples/vue.html)

@@ -64,9 +64,3 @@ circuit-call-stage {
   display: block;
 }
 ```
-
-
-## Referenced in examples
-
-* [Video Call](../examples/videoCall.html)
-* [Vue.js App](../examples/vue.html)

@@ -107,8 +107,3 @@ Here are some example CSS rules:
         --input-float: right;
       }
 ```
-
-
-## Referenced in examples
-
-* [Circuit Chat](../examples/chat.html)
