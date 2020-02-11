@@ -287,8 +287,8 @@ export class CircuitCallButton extends HTMLElement {
       await this._waitingRoom(this._guestToken);
       this.call = await this._client.joinConference({
         token: this._guestToken,
-        firstName: this._firstName,
-        lastName: this._lastName
+        firstName: this._firstName || 'unknown',
+        lastName: this._lastName || 'unknown'
       }, { audio: true, video: this._sendVideo });
     } catch (err) {
       this.removeAttribute('disabled');

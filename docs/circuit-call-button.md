@@ -7,7 +7,7 @@
 <circuit-call-button
   video
   domain="circuitsandbox.net"
-  clientId="f06c51a30f0d4eb6acc05829c3e86266"
+  clientId="..."
   target="circuitsdk01@gmail.com"
   callingText="Calling Helpdesk..."
   ringbackTone="https://upload.wikimedia.org/wikipedia/commons/e/ea/UK_ringback_tone.ogg"
@@ -17,18 +17,19 @@
 ```html
 // Audio call. Specifies only required attribute. Defaults to circuitsandbox.net system.
 <circuit-call-button
-  clientId="f06c51a30f0d4eb6acc05829c3e86266"
+  clientId="..."
   target="support@mycompany.com">Call Support</circuit-call-button>
 ```
 
 ```html
-// Guest video call on EU production system. No user authentication required. Authentication done via requesting a token from REST endpoint defined by poolUrl attribute.
+// Guest video call on EU production system. No user authentication required since a guest token is provided.
 <circuit-call-button
   video
   domain="eu.yourcircuit.com"
-  clientId="cbe64f18e8584b7380c4fe461539d541"
-  poolUrl="https://circuit-pool.company.com"
-  target="hr@company.com">Call HR</circuit-call-button>
+  clientId="..."
+  guestToken="..."
+  firstName="John"
+  lastName="Doe">Join All-hands call</circuit-call-button>
 ```
 
 ## API
