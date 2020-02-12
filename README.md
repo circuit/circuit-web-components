@@ -34,10 +34,6 @@ Renders a button to start a Circuit call, either as guest (via pool of authentic
 Renders local and remote video streams of a call. `convId` is passed as property to the web component to determine which conversation is rendered.
 
 
-### [circuit-conversations-list](docs/circuit-conversations-list.md)
-Renders a list of the most recent circuit conversations. 
-
-
 ### [circuit-chat](docs/circuit-chat.md)
 Renders a circuit conversation feed and allows the user to participate in the chat. `call` is passed as property to the web component. `overlay` attribute can be used to define the position on the local video, or to hide it.
 
