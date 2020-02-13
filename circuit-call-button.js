@@ -108,16 +108,10 @@ export class CircuitCallButton extends HTMLElement {
   constructor() {
     super();
     this.EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
     this._client = null;
-
-    this.root = this.attachShadow({ mode: 'open' });
-    this.root.appendChild(template.content.cloneNode(true));
-
-    this._btn = this.root.querySelector('button');
-    this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
-    this._btn.textContent = this._defaultText;
-    this._btn.addEventListener('click', this._click.bind(this));
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this._click = this._click.bind(this);
   }
 
   _validateTarget() {
@@ -169,7 +163,7 @@ export class CircuitCallButton extends HTMLElement {
       }
 
       // Set/clear ringback tone
-      const ringbackEl = this.root.querySelector('#ringback');
+      const ringbackEl = this.shadowRoot.querySelector('#ringback');
       if (e.call.state === 'Delivered') {
         ringbackEl.src = this._ringbackTone;
       } else {
@@ -178,7 +172,7 @@ export class CircuitCallButton extends HTMLElement {
       }
 
       // Set remote audio stream
-      this.root.querySelector('#audio').srcObject = e.call.remoteAudioStream;
+      this.shadowRoot.querySelector('#audio').srcObject = e.call.remoteAudioStream;
 
       this.dispatchEvent(new CustomEvent('callchange', { detail: e.call }));
     });
@@ -188,7 +182,7 @@ export class CircuitCallButton extends HTMLElement {
       this.removeAttribute('inprogress');
       this._btn.textContent = this._defaultText;
 
-      const ringbackEl = this.root.querySelector('#ringback');
+      const ringbackEl = this.shadowRoot.querySelector('#ringback');
       ringbackEl.removeAttribute('src');
       ringbackEl.load();
 
@@ -269,7 +263,7 @@ export class CircuitCallButton extends HTMLElement {
         await this._client.leaveConference(this.call.callId);
       }
     } else {
-      if (this.direct) {
+      if (this._direct) {
         await this._makeCall();
       } else if (this._guestToken) {
         await this._joinConference();
@@ -359,6 +353,11 @@ export class CircuitCallButton extends HTMLElement {
 
   // Lifecycle hooks
   connectedCallback() {
+    this._btn = this.shadowRoot.querySelector('button');
+    this._defaultText = this.textContent && this.textContent.replace(/^\s+|\s+$/g, '') || 'Call';
+    this._btn.textContent = this._defaultText;
+    this._btn.addEventListener('click', this._click);
+
     this._clientId = this.getAttribute('clientId');
     this._domain = this.getAttribute('domain') || 'circuitsandbox.net';
     this._poolUrl = this.getAttribute('poolUrl');
@@ -373,6 +372,13 @@ export class CircuitCallButton extends HTMLElement {
     this._joinText = this.getAttribute('joinText') || 'Join';
     this._hangupText = this.getAttribute('hangupText') || 'Hangup';
     this._ringbackTone = this.getAttribute('ringbackTone') || 'https://upload.wikimedia.org/wikipedia/commons/c/cd/US_ringback_tone.ogg';
+  }
+
+  disconnectedCallback() {
+    if (!this._btn) {
+      return;
+    }
+    this._btn.removeEventListener('click', this._click);
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {
